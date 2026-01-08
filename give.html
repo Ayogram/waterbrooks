@@ -11,9 +11,9 @@
     />
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body>
+
+  <body class="give-page">
     <!-- Header -->
-   
     <header class="header">
       <div class="container nav-container">
         <!-- Logo -->
@@ -24,7 +24,7 @@
 
         <!-- Navigation -->
         <nav class="nav">
-         <ul class="nav-list" id="mobileNav">
+          <ul class="nav-list" id="mobileNav">
             <li><a href="index.html" class="nav-link">Home</a></li>
             <li><a href="about.html" class="nav-link">About</a></li>
             <li><a href="signup.html" class="nav-link">Sign Up</a></li>
@@ -35,20 +35,20 @@
             <li><a href="contact.html" class="nav-link">Contact</a></li>
           </ul>
         </nav>
-        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
-  <span></span>
-  <span></span>
-  <span></span>
-</button>
 
+        <button
+          class="hamburger"
+          id="hamburger"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobileNav"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </header>
-    <main class="give-wrapper">
-  <div class="give-card">
-    <h1>Give</h1>
-
-    
-</main>
 
     <!-- Hero Section -->
     <section class="hero" style="background-image: url('images/hero4.png');">
@@ -56,7 +56,9 @@
       <div class="hero-content">
         <span class="pill">Support</span>
         <h1 class="hero-title">Partner with Waterbrooks</h1>
-        <p class="hero-text">Your generosity fuels our mission to raise godly leaders and carry the healing power of God to the nations.</p>
+        <p class="hero-text">
+          Your generosity fuels our mission to raise godly leaders and carry the healing power of God to the nations.
+        </p>
       </div>
     </section>
 
@@ -65,13 +67,12 @@
       <div class="container giving-container">
         <div class="giving-content">
           <h2 class="giving-title">Give to Waterbrooks Ministry International</h2>
-          <p class="giving-text">
-            Your generosity keeps blessing lives; thank you for giving.
-          </p>
+          <p class="giving-text">Your generosity keeps blessing lives; thank you for giving.</p>
           <div class="giving-buttons">
-          <button type="button" class="btn btn-primary" id="giveNowBtn">Give Now</button>
+            <button type="button" class="btn btn-primary" id="giveNowBtn">Give Now</button>
           </div>
         </div>
+
         <div class="giving-graphic" aria-hidden="true">
           <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
             <path d="M10 300 C120 200 220 200 320 300 S520 400 650 250" />
@@ -83,32 +84,29 @@
 
     <!-- Mailing list section -->
     <section class="mailing-section">
-  <div class="container mailing-container">
-    <h2 class="mailing-title">Join our mailing list</h2>
-    <p class="mailing-text">
-      We promise not to spam you, but send you edifying and amazing content
-      regularly from Waterbrooks Ministry International.
-    </p>
+      <div class="container mailing-container">
+        <h2 class="mailing-title">Join our mailing list</h2>
+        <p class="mailing-text">
+          We promise not to spam you, but send you edifying and amazing content regularly from Waterbrooks Ministry International.
+        </p>
 
-    <!-- Hidden iframe so page doesn't redirect -->
-   <iframe name="hidden_iframe" style="display:none;"></iframe>
+        <iframe name="hidden_iframe" style="display:none;"></iframe>
 
-<form
-  class="mailing-form"
-  id="mailingForm"
-  action="https://script.google.com/macros/s/AKfycby3Py_tvc4kdqgbEdp7tV8jtHlYu6yBiAN45pFgBWXrS89lsF18Cb6qeqTDThkko0MRTg/exec"
-  method="post"
-  target="hidden_iframe"
->
-  <input type="hidden" name="formType" value="email" />
-  <input type="hidden" name="page" id="mailingPage" />
+        <form
+          class="mailing-form"
+          id="mailingForm"
+          action="https://script.google.com/macros/s/AKfycby3Py_tvc4kdqgbEdp7tV8jtHlYu6yBiAN45pFgBWXrS89lsF18Cb6qeqTDThkko0MRTg/exec"
+          method="post"
+          target="hidden_iframe"
+        >
+          <input type="hidden" name="formType" value="email" />
+          <input type="hidden" name="page" id="mailingPage" />
 
-  <input type="email" name="email" id="mailingEmail" placeholder="Email" required />
-  <button type="submit" class="btn btn-primary" id="mailingBtn">Submit</button>
-</form>
-
-  </div>
-</section>
+          <input type="email" name="email" id="mailingEmail" placeholder="Email" required />
+          <button type="submit" class="btn btn-primary" id="mailingBtn">Submit</button>
+        </form>
+      </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -116,14 +114,15 @@
         <div class="footer-logo">
           <span class="logo-text">Waterbrooks Ministry International</span>
         </div>
+
         <div class="footer-columns">
           <div class="footer-column">
             <h4>Connect</h4>
             <ul>
               <li><a href="signup.html">Become a member</a></li>
-             
             </ul>
           </div>
+
           <div class="footer-column">
             <h4>Ministries</h4>
             <ul>
@@ -131,77 +130,92 @@
               <li><a href="ministries.html">Brooks Kids</a></li>
             </ul>
           </div>
+
           <div class="footer-column">
             <h4>Media</h4>
             <ul>
-           <li>
-  <a href="https://www.youtube.com/@Thebrooksnation" target="_blank" rel="noopener noreferrer">
-    Watch Online
-  </a>
-</li>
-
+              <li>
+                <a href="https://www.youtube.com/@Thebrooksnation" target="_blank" rel="noopener noreferrer">
+                  Watch Online
+                </a>
+              </li>
             </ul>
           </div>
         </div>
+
         <div class="footer-bottom">
           <p>© Copyright 2025 Waterbrooks Ministry International. All rights reserved.</p>
           <div class="social-icons">
-            <a href="https://www.youtube.com/@Thebrooksnation" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   aria-label="YouTube">
-  <img src="images/youtube.png" alt="YouTube" class="social-icon-image" />
-</a>
+            <a
+              href="https://www.youtube.com/@Thebrooksnation"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+            >
+              <img src="images/youtube.png" alt="YouTube" class="social-icon-image" />
+            </a>
 
-           <a href="https://web.facebook.com/WATERBROOKSNG" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   aria-label="Facebook">
-  <img src="images/facebook.png" alt="Facebook" class="social-icon-image" />
-</a>
+            <a
+              href="https://web.facebook.com/WATERBROOKSNG"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+            >
+              <img src="images/facebook.png" alt="Facebook" class="social-icon-image" />
+            </a>
           </div>
         </div>
       </div>
     </footer>
-    <script src="js/main.js"></script>
-    <!-- GIVE POPUP MODAL (paste before </body>) -->
-<div id="giveModal" class="give-modal" aria-hidden="true">
-  <div class="give-modal__card" role="dialog" aria-modal="true" aria-labelledby="giveModalTitle">
-    <button class="give-modal__close" id="closeGiveModal" aria-label="Close">&times;</button>
 
-    <div class="give-modal__header">
-      <h3 id="giveModalTitle">NAIRA ACCOUNT</h3>
-    </div>
+    <!-- GIVE POPUP MODAL -->
+    <div id="giveModal" class="give-modal" aria-hidden="true">
+      <div class="give-modal__card" role="dialog" aria-modal="true" aria-labelledby="giveModalTitle">
+        <button class="give-modal__close" id="closeGiveModal" aria-label="Close">&times;</button>
 
-    <div class="give-modal__box">
-      <div class="give-modal__meta">
-        <p class="give-label">BANK</p>
-        <p class="give-value">Stanbic IBTC</p>
-
-        <p class="give-label">ACCOUNT NAME</p>
-        <p class="give-value">Waterbrooks Ministry International</p>
-      </div>
-
-      <div class="give-modal__acct">
-        <div>
-          <p class="give-label">ACCOUNT NUMBER</p>
-          <p class="give-acct" id="accountNumberText">0015743652</p>
+        <div class="give-modal__header">
+          <h3 id="giveModalTitle">NAIRA ACCOUNT</h3>
         </div>
 
-        <button class="give-copy-btn" id="copyAccountBtn" aria-label="Copy account number" title="Copy">
-          <!-- simple copy icon -->
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M6 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <div class="give-modal__box">
+          <div class="give-modal__meta">
+            <p class="give-label">BANK</p>
+            <p class="give-value">Stanbic IBTC</p>
+
+            <p class="give-label">ACCOUNT NAME</p>
+            <p class="give-value">Waterbrooks Ministry International</p>
+          </div>
+
+          <div class="give-modal__acct">
+            <div>
+              <p class="give-label">ACCOUNT NUMBER</p>
+              <p class="give-acct" id="accountNumberText">0015743652</p>
+            </div>
+
+            <button class="give-copy-btn" id="copyAccountBtn" aria-label="Copy account number" title="Copy">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M6 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <p class="give-copied" id="copyStatusText"></p>
+        </div>
       </div>
-
-      <p class="give-copied" id="copyStatusText"></p>
     </div>
-  </div>
-</div>
-<script src="js/script.js"></script>
 
+    <!-- Use ONE script file (the one that contains hamburger + give modal logic) -->
+    <script src="js/script.js"></script>
   </body>
 </html>

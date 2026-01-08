@@ -1588,3 +1588,14 @@ body.hero-ready .hero-overlay {
   color: #1a7f37;
   min-height: 18px;
 }
+/* GIVE PAGE: always keep the hero overlay visible so it stays blueish */
+.hero[style*="hero4"] .hero-overlay,
+.hero[style*="hero4.png"] .hero-overlay {
+  opacity: 1 !important;
+}
+/* =========================================================
+   FORCE ACTIVE UNDERLINE ON GIVE PAGE
+   ========================================================= */
+body.give-page .nav-link[href="give.html"]::after {
+  width: 100%;
+}

@@ -96,7 +96,7 @@ document.addEventListener("keydown", (e) => {
   // Highlight active nav link
   // =========================
   const navLinks = document.querySelectorAll(".nav-link");
-  const currentPage = window.location.pathname.split("/").pop();
+  const currentPage = window.location.pathname.split("/").pop().split("?")[0].split("#")[0];
 
   navLinks.forEach((link) => {
     const href = link.getAttribute("href");

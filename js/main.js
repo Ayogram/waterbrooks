@@ -6,46 +6,45 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   // Mobile navigation toggling
   // =========================
- const hamburger = document.getElementById("hamburger");
-const navList = document.querySelector(".nav-list");
+  const hamburger = document.getElementById("hamburger");
+  const navList = document.querySelector(".nav-list");
 
-const closeMenu = () => {
-  if (!navList || !hamburger) return;
-  navList.classList.remove("open");
-  hamburger.setAttribute("aria-expanded", "false");
-};
+  const closeMenu = () => {
+    if (!navList || !hamburger) return;
+    navList.classList.remove("open");
+    hamburger.setAttribute("aria-expanded", "false");
+  };
 
-hamburger?.addEventListener("click", () => {
-  if (!navList) return;
-  const isOpen = navList.classList.toggle("open");
-  hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
-});
+  hamburger?.addEventListener("click", () => {
+    if (!navList) return;
+    const isOpen = navList.classList.toggle("open");
+    hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
 
-/* Close menu when you click any menu link (mobile) */
-document.querySelectorAll(".nav-list .nav-link").forEach((link) => {
-  link.addEventListener("click", closeMenu);
-});
+  // Close menu when you click any menu link (mobile)
+  document.querySelectorAll(".nav-list .nav-link").forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
 
-/* Close menu if user taps outside the dropdown */
-document.addEventListener("click", (e) => {
-  if (!navList || !hamburger) return;
+  // Close menu if user taps outside the dropdown
+  document.addEventListener("click", (e) => {
+    if (!navList || !hamburger) return;
 
-  const clickedInsideMenu = navList.contains(e.target);
-  const clickedHamburger = hamburger.contains(e.target);
+    const clickedInsideMenu = navList.contains(e.target);
+    const clickedHamburger = hamburger.contains(e.target);
 
-  if (!clickedInsideMenu && !clickedHamburger) {
-    closeMenu();
-  }
-});
+    if (!clickedInsideMenu && !clickedHamburger) {
+      closeMenu();
+    }
+  });
 
-/* Close menu on Escape key */
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeMenu();
-});
-
+  // Close menu on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
 
   // =========================
-  // Hero background slideshow (with preload to prevent blue flash)
+  // Hero background slideshow (with preload to prevent flash)
   // =========================
   const heroSection = document.querySelector(".hero");
 
@@ -71,7 +70,6 @@ document.addEventListener("keydown", (e) => {
       });
 
     const startSlideshow = () => {
-      // avoid multiple intervals
       if (slideshowTimer) return;
 
       slideshowTimer = setInterval(() => {
@@ -80,13 +78,11 @@ document.addEventListener("keydown", (e) => {
       }, 5000);
     };
 
-    // 1) Load the first image, then show overlay/content (prevents the blue flash)
     preloadImage(heroImages[0]).then(() => {
       heroSection.style.backgroundImage = `url('${heroImages[0]}')`;
       document.body.classList.add("hero-ready");
     });
 
-    // 2) Preload the rest in the background, then start slideshow
     Promise.all(heroImages.slice(1).map(preloadImage)).then(() => {
       startSlideshow();
     });
@@ -121,10 +117,10 @@ document.addEventListener("keydown", (e) => {
       });
     });
   }
-});
 
-// ===== Give Modal Popup (Give Page) =====
-document.addEventListener("DOMContentLoaded", () => {
+  // =========================
+  // GIVE MODAL POPUP (Give Page)
+  // =========================
   const giveBtn = document.getElementById("giveNowBtn");
   const modal = document.getElementById("giveModal");
   const closeBtn = document.getElementById("closeGiveModal");
@@ -132,43 +128,167 @@ document.addEventListener("DOMContentLoaded", () => {
   const acctText = document.getElementById("accountNumberText");
   const statusText = document.getElementById("copyStatusText");
 
-  if (!giveBtn || !modal) return;
+  // If not on Give page, exit cleanly
+  if (giveBtn && modal) {
+    // Debug (you can remove later)
+    // console.log("Give modal initialized");
 
-  const openModal = () => {
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  };
+    // Defensive: ensure button can receive clicks even if overlays exist
+    giveBtn.style.position = "relative";
+    giveBtn.style.zIndex = "20";
+    giveBtn.style.pointerEvents = "auto";
 
-  const closeModal = () => {
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-    if (statusText) statusText.textContent = "";
-  };
+    const openModal = () => {
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    };
 
-  giveBtn.addEventListener("click", openModal);
-  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    const closeModal = () => {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (statusText) statusText.textContent = "";
+    };
 
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
+    // Use both click + pointerup for stubborn overlay/click issues
+    giveBtn.addEventListener("click", openModal);
+    giveBtn.addEventListener("pointerup", openModal);
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
-  });
+    closeBtn?.addEventListener("click", closeModal);
 
-  if (copyBtn && acctText) {
-    copyBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(acctText.textContent.trim());
-        if (statusText) statusText.textContent = "Account number copied!";
-        setTimeout(() => {
-          if (statusText) statusText.textContent = "";
-        }, 2000);
-      } catch (err) {
-        if (statusText) statusText.textContent = "Copy failed. Please copy manually.";
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+
+    if (copyBtn && acctText) {
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(acctText.textContent.trim());
+          if (statusText) statusText.textContent = "Account number copied!";
+          setTimeout(() => {
+            if (statusText) statusText.textContent = "";
+          }, 2000);
+        } catch (err) {
+          if (statusText) statusText.textContent = "Copy failed. Please copy manually.";
+        }
+      });
+    }
+  }
+
+  // =========================
+  // Mailing List Submission (iframe submit)
+  // =========================
+  const mailingForm = document.getElementById("mailingForm");
+  const pageInput = document.getElementById("mailingPage");
+  const mailingBtn = document.getElementById("mailingBtn");
+
+  if (mailingForm) {
+    mailingForm.addEventListener("submit", () => {
+      if (pageInput) pageInput.value = window.location.pathname;
+
+      if (mailingBtn) {
+        mailingBtn.disabled = true;
+        mailingBtn.textContent = "Submitting...";
       }
+
+      setTimeout(() => {
+        alert("Thank you. You have been added to our mailing list.");
+        mailingForm.reset();
+
+        if (mailingBtn) {
+          mailingBtn.disabled = false;
+          mailingBtn.textContent = "Submit";
+        }
+      }, 1200);
+    });
+  }
+
+  // =========================
+  // Signup Form
+  // =========================
+  const signupForm = document.getElementById("signupForm");
+  if (signupForm) {
+    const btn = document.getElementById("signupSubmitBtn");
+    const hiddenAge = document.getElementById("ageGroupCombined");
+
+    signupForm.addEventListener("submit", () => {
+      const checked = Array.from(signupForm.querySelectorAll('input[name="ageGroup"]:checked')).map(
+        (cb) => cb.value
+      );
+
+      if (hiddenAge) hiddenAge.value = checked.join(", ");
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+      }
+
+      setTimeout(() => {
+        alert("Thank you. Your signup has been received.");
+        signupForm.reset();
+
+        if (hiddenAge) hiddenAge.value = "";
+
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Submit";
+        }
+      }, 1200);
+    });
+  }
+
+  // =========================
+  // Celebration Form
+  // =========================
+  const celebrationForm = document.getElementById("celebrationForm");
+  const celebrationBtn = document.getElementById("celebrationSubmitBtn");
+
+  if (celebrationForm) {
+    celebrationForm.addEventListener("submit", () => {
+      if (celebrationBtn) {
+        celebrationBtn.disabled = true;
+        celebrationBtn.textContent = "Submitting...";
+      }
+
+      setTimeout(() => {
+        alert("Thank you. Your celebration request has been received.");
+        celebrationForm.reset();
+
+        if (celebrationBtn) {
+          celebrationBtn.disabled = false;
+          celebrationBtn.textContent = "Submit";
+        }
+      }, 1200);
+    });
+  }
+
+  // =========================
+  // Contact Form
+  // =========================
+  const contactForm = document.getElementById("contactForm");
+  const contactBtn = document.getElementById("contactSubmitBtn");
+
+  if (contactForm) {
+    contactForm.addEventListener("submit", () => {
+      if (contactBtn) {
+        contactBtn.disabled = true;
+        contactBtn.textContent = "Submitting...";
+      }
+
+      setTimeout(() => {
+        alert("Thank you. Your message has been received. We will get back to you shortly.");
+        contactForm.reset();
+
+        if (contactBtn) {
+          contactBtn.disabled = false;
+          contactBtn.textContent = "Submit";
+        }
+      }, 1200);
     });
   }
 });
@@ -197,115 +317,3 @@ async function sendToSheets(formType, data) {
   if (!result.ok) throw new Error(result.error || "Submission failed");
   return result;
 }
-
-// ===== Mailing List Submission =====
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("mailingForm");
-  const pageInput = document.getElementById("mailingPage");
-  const btn = document.getElementById("mailingBtn");
-
-  if (!form) return;
-
-  form.addEventListener("submit", () => {
-    if (pageInput) pageInput.value = window.location.pathname;
-
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-    }
-
-    setTimeout(() => {
-      alert("Thank you. You have been added to our mailing list.");
-      form.reset();
-
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Submit";
-      }
-    }, 1200);
-  });
-});
-
-// ===== Signup Form =====
-document.addEventListener("DOMContentLoaded", () => {
-  const signupForm = document.getElementById("signupForm");
-  if (!signupForm) return;
-
-  const btn = document.getElementById("signupSubmitBtn");
-  const hiddenAge = document.getElementById("ageGroupCombined");
-
-  signupForm.addEventListener("submit", () => {
-    const checked = Array.from(signupForm.querySelectorAll('input[name="ageGroup"]:checked')).map(
-      (cb) => cb.value
-    );
-
-    if (hiddenAge) hiddenAge.value = checked.join(", ");
-
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-    }
-
-    setTimeout(() => {
-      alert("Thank you. Your signup has been received.");
-      signupForm.reset();
-
-      if (hiddenAge) hiddenAge.value = "";
-
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Submit";
-      }
-    }, 1200);
-  });
-});
-
-// ===== Celebration Form =====
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("celebrationForm");
-  const btn = document.getElementById("celebrationSubmitBtn");
-
-  if (!form) return;
-
-  form.addEventListener("submit", () => {
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-    }
-
-    setTimeout(() => {
-      alert("Thank you. Your celebration request has been received.");
-      form.reset();
-
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Submit";
-      }
-    }, 1200);
-  });
-});
-
-// ===== Contact Form =====
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("contactForm");
-  const btn = document.getElementById("contactSubmitBtn");
-
-  if (!form) return;
-
-  form.addEventListener("submit", () => {
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-    }
-
-    setTimeout(() => {
-      alert("Thank you. Your message has been received. We will get back to you shortly.");
-      form.reset();
-
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Submit";
-      }
-    }, 1200);
-  });
-});

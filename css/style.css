@@ -1504,6 +1504,9 @@ body.hero-ready .hero-overlay {
 }
 
 .give-modal.is-open { display: flex; }
+/* Open modal without JS */
+.give-modal:target { display: flex; }
+
 
 .give-modal__card {
   width: min(820px, 100%);
@@ -1518,15 +1521,27 @@ body.hero-ready .hero-overlay {
   position: absolute;
   top: 14px;
   right: 14px;
+
   width: 42px;
   height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,0.15);
-  background: #fff;
+  background: #ffffff;
+
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  color: #0a2342;
+
   cursor: pointer;
-  font-size: 24px;
-  line-height: 0;
+  text-decoration: none;
 }
+
 
 .give-modal__box {
   background: #f7efe7;
@@ -1598,4 +1613,58 @@ body.hero-ready .hero-overlay {
    ========================================================= */
 body.give-page .nav-link[href="give.html"]::after {
   width: 100%;
+}
+.hero-overlay {
+  pointer-events: none;
+}
+/* ===== FIX: Ensure Give content/button sits above the decorative SVG layer ===== */
+.giving-container { position: relative; }
+
+.giving-content {
+  position: relative;
+  z-index: 2;
+}
+
+.giving-graphic {
+  z-index: 1;
+  pointer-events: none;
+}
+
+#giveNowBtn {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+/* =========================
+   GIVE MODAL – MOBILE FIX
+   ========================= */
+@media (max-width: 768px) {
+  .give-modal {
+    padding: 12px;
+  }
+
+  .give-modal__card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .give-modal__box {
+    padding: 14px;
+  }
+
+  .give-acct {
+    font-size: 22px;
+    word-break: break-all;
+  }
+
+  .give-modal__acct {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .give-copy-btn {
+    align-self: flex-end;
+  }
 }

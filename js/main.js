@@ -6,12 +6,43 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   // Mobile navigation toggling
   // =========================
-  const hamburger = document.getElementById("hamburger");
-  const navList = document.querySelector(".nav-list");
+ const hamburger = document.getElementById("hamburger");
+const navList = document.querySelector(".nav-list");
 
-  hamburger?.addEventListener("click", () => {
-    navList?.classList.toggle("open");
-  });
+const closeMenu = () => {
+  if (!navList || !hamburger) return;
+  navList.classList.remove("open");
+  hamburger.setAttribute("aria-expanded", "false");
+};
+
+hamburger?.addEventListener("click", () => {
+  if (!navList) return;
+  const isOpen = navList.classList.toggle("open");
+  hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+});
+
+/* Close menu when you click any menu link (mobile) */
+document.querySelectorAll(".nav-list .nav-link").forEach((link) => {
+  link.addEventListener("click", closeMenu);
+});
+
+/* Close menu if user taps outside the dropdown */
+document.addEventListener("click", (e) => {
+  if (!navList || !hamburger) return;
+
+  const clickedInsideMenu = navList.contains(e.target);
+  const clickedHamburger = hamburger.contains(e.target);
+
+  if (!clickedInsideMenu && !clickedHamburger) {
+    closeMenu();
+  }
+});
+
+/* Close menu on Escape key */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeMenu();
+});
+
 
   // =========================
   // Hero background slideshow (with preload to prevent blue flash)

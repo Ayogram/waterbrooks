@@ -5,41 +5,48 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Waterbrooks Ministry International</title>
-    <!-- Google Fonts (fallback to system fonts if unavailable) -->
+
+    <!-- Preload hero images to prevent first-load flash -->
+    <link rel="preload" as="image" href="images/hero.jpg" />
+    <link rel="preload" as="image" href="images/hero2.jpg" />
+    <link rel="preload" as="image" href="images/hero3.jpg" />
+    <link rel="preload" as="image" href="images/hero4.png" />
+    <link rel="preload" as="image" href="images/hero5.png" />
+    <link rel="preload" as="image" href="images/hero6.png" />
+
+    <!-- Google Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
+
     <link rel="stylesheet" href="css/style.css" />
   </head>
+
   <body>
     <!-- Header -->
     <header class="header">
-  <div class="container nav-container">
-    
-    <!-- Logo -->
-   <a href="index.html" class="logo">
-  <span class="logo-text">WATERBROOKS</span>
-  <img src="images/logo.png" alt="Waterbrooks Ministry International" />
-</a>
+      <div class="container nav-container">
+        <!-- Logo -->
+        <a href="index.html" class="logo">
+          <span class="logo-text">WATERBROOKS</span>
+          <img src="images/logo.png" alt="Waterbrooks Ministry International" />
+        </a>
 
-    <!-- Navigation -->
-    <nav class="nav">
-      <ul class="nav-list">
-        <li><a href="index.html" class="nav-link">Home</a></li>
-        <li><a href="about.html" class="nav-link">About</a></li>
-        <li><a href="signup.html" class="nav-link">Sign Up</a></li>
-        <li><a href="ministries.html" class="nav-link">Ministries</a></li>
-        <li><a href="celebration.html" class="nav-link">Celebration</a></li>
-        <li><a href="nigeria.html" class="nav-link">Campus</a></li>
-        <li><a href="give.html" class="nav-link">Give</a></li>
-        <li><a href="contact.html" class="nav-link">Contact</a></li>
-      </ul>
-    </nav>
-
-  </div>
-</header>
-
+        <!-- Navigation -->
+        <nav class="nav">
+          <ul class="nav-list">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="signup.html" class="nav-link">Sign Up</a></li>
+            <li><a href="ministries.html" class="nav-link">Ministries</a></li>
+            <li><a href="celebration.html" class="nav-link">Celebration</a></li>
+            <li><a href="nigeria.html" class="nav-link">Campus</a></li>
+            <li><a href="give.html" class="nav-link">Give</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
     </header>
 
     <!-- Hero Section -->
@@ -48,11 +55,17 @@
       <div class="hero-content">
         <span class="pill">Our Vision</span>
         <h1 class="hero-title">
-          Making manifest the GOD‑LIFE through the practical teaching and application of the
+          Making manifest the GOD-LIFE through the practical teaching and application of the
           <span class="text-highlight">undiluted word of GOD</span>.
         </h1>
         <div class="hero-buttons">
-          <a href="http://www.youtube.com/@Thebrooksnation" class="btn btn-primary" target="_blank" rel="noopener">Watch Live</a>
+          <a
+            href="http://www.youtube.com/@Thebrooksnation"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener"
+            >Watch Live</a
+          >
         </div>
       </div>
     </section>
@@ -98,7 +111,6 @@
     <!-- Campuses callout section -->
     <section class="campus-callout">
       <div class="container">
-        <!-- Removed the campuses count pill per user request -->
         <h2 class="campus-title">
           Raising Godly leaders and taking the <span class="text-highlight">healing power of GOD</span>
           to all the nations of the world.
@@ -107,31 +119,33 @@
     </section>
 
     <!-- Visit Section -->
-<section class="visit-section">
-  <div class="container">
-    <!-- Updated heading and removed See all campuses button -->
-    <h2 class="visit-heading">Join us at Waterbrooks Ministry</h2>
-    <div class="visit-grid">
-      <a href="nigeria.html" class="visit-card">
-        <img class="visit-img" src="images/nigeria.jpg" alt="Nigeria" />
-        <div class="visit-info">
-          <h3>Nigeria</h3>
-          <p>1 campus</p>
-        </div>
-      </a>
+    <section class="visit-section">
+      <div class="container">
+        <h2 class="visit-heading">Join us at Waterbrooks Ministry</h2>
+        <div class="visit-grid">
+          <a href="nigeria.html" class="visit-card">
+            <img class="visit-img" src="images/nigeria.jpg" alt="Nigeria" />
+            <div class="visit-info">
+              <h3>Nigeria</h3>
+              <p>1 campus</p>
+            </div>
+          </a>
 
-      <!-- Watch Online Card -->
-      <a href="https://www.youtube.com/@Thebrooksnation" class="visit-card" target="_blank" rel="noopener noreferrer">
-        <img class="visit-img" src="images/online.jpg" alt="Watch online" />
-        <div class="visit-info">
-          <h3>Watch online</h3>
-          <p>On any device</p>
+          <a
+            href="https://www.youtube.com/@Thebrooksnation"
+            class="visit-card"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img class="visit-img" src="images/online.jpg" alt="Watch online" />
+            <div class="visit-info">
+              <h3>Watch online</h3>
+              <p>On any device</p>
+            </div>
+          </a>
         </div>
-      </a>
-    </div>
-  </div>
-</section>
-
+      </div>
+    </section>
 
     <!-- Boast Section -->
     <section class="boast-section">
@@ -156,9 +170,7 @@
           We do community differently<br />
           at <span class="text-highlight">Waterbrooks</span>
         </h2>
-        <p class="community-text">
-          More than a church, a place to grow
-        </p>
+        <p class="community-text">More than a church, a place to grow</p>
         <div class="community-grid">
           <div class="community-card">
             <img class="community-img" src="images/community1.jpg" alt="Membership Classes" />
@@ -222,19 +234,15 @@
     <section class="ministries-section">
       <div class="container">
         <span class="pill small-pill">Ministries</span>
-        <h2 class="ministries-title">
-          There's a place for everyone
-        </h2>
+        <h2 class="ministries-title">There's a place for everyone</h2>
         <a href="#" class="btn btn-secondary outline">See all ministries</a>
         <div class="ministries-grid">
           <div class="ministries-card">
-            <!-- Updated image and content for Brooks Kids -->
             <img class="ministries-img" src="images/ministry1.jpg" alt="Brooks Kids" />
             <h3>Brooks Kids</h3>
             <p>Children Church</p>
           </div>
           <div class="ministries-card">
-            <!-- Updated image for Waterbrooks Worship -->
             <img class="ministries-img" src="images/ministry2.jpg" alt="Waterbrooks Worship" />
             <h3>Waterbrooks Worship</h3>
             <p>Brooks Voice</p>
@@ -248,15 +256,11 @@
       <div class="container giving-container">
         <div class="giving-content">
           <h2 class="giving-title">Give to Waterbrooks Ministry International</h2>
-          <p class="giving-text">
-            Your generosity keeps blessing lives; thank you for giving.
-          </p>
+          <p class="giving-text">Your generosity keeps blessing lives; thank you for giving.</p>
           <div class="giving-buttons">
-            <!-- Swap button styles so "Give Now" is primary (blue) and "Building Project" is secondary -->
             <a href="give.html" class="btn btn-primary">Give Now</a>
           </div>
         </div>
-        <!-- Decorative hand line art graphic for giving section -->
         <div class="giving-graphic" aria-hidden="true">
           <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
             <path d="M10 300 C120 200 220 200 320 300 S520 400 650 250" />
@@ -267,35 +271,31 @@
     </section>
 
     <!-- Mailing list section -->
-    <!-- Mailing list section -->
-<section class="mailing-section">
-  <div class="container mailing-container">
-    <h2 class="mailing-title">Join our mailing list</h2>
-    <p class="mailing-text">
-      We promise not to spam you, but send you edifying and amazing content
-      regularly from Waterbrooks Ministry International.
-    </p>
+    <section class="mailing-section">
+      <div class="container mailing-container">
+        <h2 class="mailing-title">Join our mailing list</h2>
+        <p class="mailing-text">
+          We promise not to spam you, but send you edifying and amazing content
+          regularly from Waterbrooks Ministry International.
+        </p>
 
-    <!-- Hidden iframe so page doesn't redirect -->
-   <iframe name="hidden_iframe" style="display:none;"></iframe>
+        <iframe name="hidden_iframe" style="display:none;"></iframe>
 
-<form
-  class="mailing-form"
-  id="mailingForm"
-  action="https://script.google.com/macros/s/AKfycby3Py_tvc4kdqgbEdp7tV8jtHlYu6yBiAN45pFgBWXrS89lsF18Cb6qeqTDThkko0MRTg/exec"
-  method="post"
-  target="hidden_iframe"
->
-  <input type="hidden" name="formType" value="email" />
-  <input type="hidden" name="page" id="mailingPage" />
+        <form
+          class="mailing-form"
+          id="mailingForm"
+          action="https://script.google.com/macros/s/AKfycby3Py_tvc4kdqgbEdp7tV8jtHlYu6yBiAN45pFgBWXrS89lsF18Cb6qeqTDThkko0MRTg/exec"
+          method="post"
+          target="hidden_iframe"
+        >
+          <input type="hidden" name="formType" value="email" />
+          <input type="hidden" name="page" id="mailingPage" />
 
-  <input type="email" name="email" id="mailingEmail" placeholder="Email" required />
-  <button type="submit" class="btn btn-primary" id="mailingBtn">Submit</button>
-</form>
-
-  </div>
-</section>
-
+          <input type="email" name="email" id="mailingEmail" placeholder="Email" required />
+          <button type="submit" class="btn btn-primary" id="mailingBtn">Submit</button>
+        </form>
+      </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -317,37 +317,37 @@
               <li><a href="ministries.html">Brooks Kids</a></li>
             </ul>
           </div>
-          <!-- Resources column removed -->
           <div class="footer-column">
             <h4>Media</h4>
             <ul>
-             <li>
-  <a href="https://www.youtube.com/@Thebrooksnation" target="_blank" rel="noopener noreferrer">
-    Watch Online
-  </a>
-</li>
-
+              <li>
+                <a href="https://www.youtube.com/@Thebrooksnation" target="_blank" rel="noopener noreferrer">
+                  Watch Online
+                </a>
+              </li>
             </ul>
           </div>
         </div>
         <div class="footer-bottom">
           <p>© Copyright 2025 Waterbrooks Ministry International. All rights reserved.</p>
           <div class="social-icons">
-            <!-- Only show YouTube and Facebook links as requested -->
-            <a href="https://www.youtube.com/@Thebrooksnation" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   aria-label="YouTube">
-  <img src="images/youtube.png" alt="YouTube" class="social-icon-image" />
-</a>
+            <a
+              href="https://www.youtube.com/@Thebrooksnation"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+            >
+              <img src="images/youtube.png" alt="YouTube" class="social-icon-image" />
+            </a>
 
-           <a href="https://web.facebook.com/WATERBROOKSNG" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   aria-label="Facebook">
-  <img src="images/facebook.png" alt="Facebook" class="social-icon-image" />
-</a>
-
+            <a
+              href="https://web.facebook.com/WATERBROOKSNG"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+            >
+              <img src="images/facebook.png" alt="Facebook" class="social-icon-image" />
+            </a>
           </div>
         </div>
       </div>

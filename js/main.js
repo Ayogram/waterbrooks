@@ -1,63 +1,97 @@
 /*
- * Simple JavaScript to handle mobile navigation toggling.
+ * Waterbrooks site scripts
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const hamburger = document.getElementById('hamburger');
-  const navList = document.querySelector('.nav-list');
+document.addEventListener("DOMContentLoaded", () => {
+  // =========================
+  // Mobile navigation toggling
+  // =========================
+  const hamburger = document.getElementById("hamburger");
+  const navList = document.querySelector(".nav-list");
 
-  hamburger?.addEventListener('click', () => {
-    navList?.classList.toggle('open');
+  hamburger?.addEventListener("click", () => {
+    navList?.classList.toggle("open");
   });
 
-  // Hero background slideshow
-  const heroSection = document.querySelector('.hero');
+  // =========================
+  // Hero background slideshow (with preload to prevent blue flash)
+  // =========================
+  const heroSection = document.querySelector(".hero");
+
   if (heroSection) {
-    // Array of background images for the hero slideshow. The first entry matches the default hero image.
     const heroImages = [
-      'images/hero.jpg',
-      'images/hero2.jpg',
-      'images/hero3.jpg',
-      'images/hero4.png',
-      'images/hero5.png',
-      'images/hero6.png'
+      "images/hero.jpg",
+      "images/hero2.jpg",
+      "images/hero3.jpg",
+      "images/hero4.png",
+      "images/hero5.png",
+      "images/hero6.png",
     ];
+
     let currentHeroIndex = 0;
-    setInterval(() => {
-      // increment the index and loop back to the beginning
-      currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
-      heroSection.style.backgroundImage = `url('${heroImages[currentHeroIndex]}')`;
-    }, 5000); // Change slide every 5 seconds
+    let slideshowTimer = null;
+
+    const preloadImage = (src) =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ src, ok: true });
+        img.onerror = () => resolve({ src, ok: false });
+        img.src = src;
+      });
+
+    const startSlideshow = () => {
+      // avoid multiple intervals
+      if (slideshowTimer) return;
+
+      slideshowTimer = setInterval(() => {
+        currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
+        heroSection.style.backgroundImage = `url('${heroImages[currentHeroIndex]}')`;
+      }, 5000);
+    };
+
+    // 1) Load the first image, then show overlay/content (prevents the blue flash)
+    preloadImage(heroImages[0]).then(() => {
+      heroSection.style.backgroundImage = `url('${heroImages[0]}')`;
+      document.body.classList.add("hero-ready");
+    });
+
+    // 2) Preload the rest in the background, then start slideshow
+    Promise.all(heroImages.slice(1).map(preloadImage)).then(() => {
+      startSlideshow();
+    });
   }
 
-  // Highlight the active navigation link based on current page
-  const navLinks = document.querySelectorAll('.nav-link');
-  const currentPage = window.location.pathname.split('/').pop();
+  // =========================
+  // Highlight active nav link
+  // =========================
+  const navLinks = document.querySelectorAll(".nav-link");
+  const currentPage = window.location.pathname.split("/").pop();
+
   navLinks.forEach((link) => {
-    const href = link.getAttribute('href');
-    // For index.html we may have empty string or index.html; treat both as homepage
-    if (
-      (currentPage === '' && href === 'index.html') ||
-      currentPage === href
-    ) {
-      link.classList.add('active');
+    const href = link.getAttribute("href");
+    if ((currentPage === "" && href === "index.html") || currentPage === href) {
+      link.classList.add("active");
     }
   });
 
-  // Member stories slider: enable slide change on dot click
-  const sliderDots = document.querySelectorAll('.slider-dots .dot');
-  const experienceSlides = document.querySelectorAll('.experience-slides .slide');
+  // =========================
+  // Member stories slider dots
+  // =========================
+  const sliderDots = document.querySelectorAll(".slider-dots .dot");
+  const experienceSlides = document.querySelectorAll(".experience-slides .slide");
+
   if (sliderDots.length && experienceSlides.length) {
     sliderDots.forEach((dot, index) => {
-      dot.addEventListener('click', () => {
-        experienceSlides.forEach((slide) => slide.classList.remove('active'));
-        sliderDots.forEach((d) => d.classList.remove('active'));
-        experienceSlides[index].classList.add('active');
-        dot.classList.add('active');
+      dot.addEventListener("click", () => {
+        experienceSlides.forEach((slide) => slide.classList.remove("active"));
+        sliderDots.forEach((d) => d.classList.remove("active"));
+        experienceSlides[index].classList.add("active");
+        dot.classList.add("active");
       });
     });
   }
 });
+
 // ===== Give Modal Popup (Give Page) =====
 document.addEventListener("DOMContentLoaded", () => {
   const giveBtn = document.getElementById("giveNowBtn");
@@ -67,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const acctText = document.getElementById("accountNumberText");
   const statusText = document.getElementById("copyStatusText");
 
-  // If this page doesn't have the button/modal, do nothing (prevents errors on other pages)
   if (!giveBtn || !modal) return;
 
   const openModal = () => {
@@ -84,11 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   giveBtn.addEventListener("click", openModal);
-
   if (closeBtn) closeBtn.addEventListener("click", closeModal);
 
   modal.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal(); // click outside card closes
+    if (e.target === modal) closeModal();
   });
 
   document.addEventListener("keydown", (e) => {
@@ -100,13 +132,16 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         await navigator.clipboard.writeText(acctText.textContent.trim());
         if (statusText) statusText.textContent = "Account number copied!";
-        setTimeout(() => { if (statusText) statusText.textContent = ""; }, 2000);
+        setTimeout(() => {
+          if (statusText) statusText.textContent = "";
+        }, 2000);
       } catch (err) {
         if (statusText) statusText.textContent = "Copy failed. Please copy manually.";
       }
     });
   }
 });
+
 // ===== Google Sheets Web App URL =====
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycby3Py_tvc4kdqgbEdp7tV8jtHlYu6yBiAN45pFgBWXrS89lsF18Cb6qeqTDThkko0MRTg/exec";
@@ -116,7 +151,7 @@ async function sendToSheets(formType, data) {
   const res = await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
     redirect: "follow",
-    headers: { "Content-Type": "text/plain;charset=utf-8" }, // IMPORTANT
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ formType, data }),
   });
 
@@ -160,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// ===== Signup Form =====
 document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signupForm");
   if (!signupForm) return;
@@ -168,19 +204,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const hiddenAge = document.getElementById("ageGroupCombined");
 
   signupForm.addEventListener("submit", () => {
-    // combine checkbox values into one string
-    const checked = Array.from(signupForm.querySelectorAll('input[name="ageGroup"]:checked'))
-      .map(cb => cb.value);
+    const checked = Array.from(signupForm.querySelectorAll('input[name="ageGroup"]:checked')).map(
+      (cb) => cb.value
+    );
 
     if (hiddenAge) hiddenAge.value = checked.join(", ");
 
-    // UI feedback
     if (btn) {
       btn.disabled = true;
       btn.textContent = "Submitting...";
     }
 
-    // since it submits to hidden iframe, keep user on page
     setTimeout(() => {
       alert("Thank you. Your signup has been received.");
       signupForm.reset();
@@ -195,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// ===== Celebration Form =====
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("celebrationForm");
   const btn = document.getElementById("celebrationSubmitBtn");
@@ -218,6 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1200);
   });
 });
+
+// ===== Contact Form =====
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("contactForm");
   const btn = document.getElementById("contactSubmitBtn");

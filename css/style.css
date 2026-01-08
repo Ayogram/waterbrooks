@@ -1,4 +1,4 @@
-/*
+/* 
  * Global Stylesheet for Waterbrooks Ministry International website
  * This file defines the overall look and feel of the site, closely
  * mirroring the reference design. All color values have been
@@ -143,8 +143,8 @@ img {
   gap: 10px;
   text-decoration: none;
 
-  /* 🔑 THIS MOVES ONLY WBM LEFT */
-  margin-left: -28px;   /* adjust if needed (-20px to -40px) */
+  /* Moves ONLY WBM left */
+  margin-left: -28px; /* adjust if needed (-20px to -40px) */
 }
 
 /* Waterbrooks text */
@@ -166,37 +166,11 @@ img {
   object-fit: contain;
 }
 
-/* =========================
-   NAV — DO NOT MOVE
-   ========================= */
-.nav {
-  margin-left: auto; /* keeps HOME and others in place */
-}
-
-/* =========================
-   MOBILE ADJUSTMENT
-   ========================= */
-@media (max-width: 768px) {
-  .logo {
-    margin-left: -16px;
-    gap: 8px;
-  }
-
-  .logo-text {
-    font-size: 13px;
-    letter-spacing: 0.16em;
-  }
-
-  .logo img {
-    height: 26px;
-  }
-}
-
-
-
+/* NAV */
 .nav {
   flex: 1;
   text-align: right;
+  margin-left: auto; /* keeps HOME and others in place */
 }
 
 .nav-list {
@@ -269,13 +243,43 @@ img {
   background: var(--light);
 }
 
-/* Hero section */
+/* =========================
+   MOBILE ADJUSTMENT (logo)
+   ========================= */
+@media (max-width: 768px) {
+  .logo {
+    margin-left: -16px;
+    gap: 8px;
+  }
+
+  .logo-text {
+    font-size: 13px;
+    letter-spacing: 0.16em;
+  }
+
+  .logo img {
+    height: 26px;
+  }
+}
+
+/* =========================================================
+   HERO (DEFAULT)
+   - Add fallback background-color to prevent blue flashing
+   ========================================================= */
 .hero {
   position: relative;
   height: 100vh;
-  /* Fill the hero section while keeping the subject's head and body visible.
-     Use 'cover' to avoid side bars and position the image from the top so the head isn't cropped. */
-  background: url('../images/hero.jpg') center top/cover no-repeat;
+
+  /* Fallback color while images load (prevents “blue screen”) */
+  background-color: #000;
+
+  /* Default static hero image (for pages that don’t override hero) */
+  background-image: url('../images/hero.jpg');
+background-position: center top;
+background-size: cover;
+background-repeat: no-repeat;
+
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,26 +287,57 @@ img {
   color: var(--light);
 }
 
-/* =====================================
-   Celebration hero – fixed background ONLY
-   ===================================== */
-.hero.celebration-hero {
-  background-image: url('../images/celev.jpg') !important;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+/* =========================================================
+   HOMEPAGE HERO SMOOTH CROSSFADE (ONLY if .home-hero is used)
+   Requires:
+   <section class="hero home-hero">
+    <div class="hero-bg hero-bg-1"></div>
+<div class="hero-bg hero-bg-2"></div>
+
+   </section>
+   ========================================================= */
+.hero.home-hero {
+  background: none;           /* important: prevents conflict with .hero background */
+  background-color: #000;     /* fallback */
+  overflow: hidden;
 }
 
+.hero.home-hero .hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  will-change: opacity;
+  z-index: 0;
+}
+
+.hero.home-hero .hero-bg-1 {
+  opacity: 1; /* first layer visible */
+}
+
+/* Keep overlay + content above backgrounds */
 .hero-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(5, 68, 120, 0.6); /* dark blue overlay */
+  background: rgba(5, 68, 120, 0.6);
   z-index: 1;
+
+  /* Prevent first-load blue flash */
+  opacity: 0;
+  transition: opacity 250ms ease;
 }
+
+/* Overlay becomes visible only after the first hero image is ready */
+body.hero-ready .hero-overlay {
+  opacity: 1;
+}
+
 
 .hero-content {
   position: relative;
@@ -312,7 +347,6 @@ img {
 }
 
 .hero-title {
-  /* Reduced the hero title size to improve readability on smaller screens */
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1.2;
@@ -329,6 +363,26 @@ img {
   display: flex;
   gap: 1rem;
   justify-content: center;
+}
+
+/* =========================================================
+   CELEBRATION HERO – fixed/static background ONLY on celebration
+   (Single, non-duplicated rule)
+   ========================================================= */
+.hero.celebration-hero {
+  background-image: url('../images/celev.jpg') !important;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* static effect (desktop) */
+  min-height: 85vh;
+}
+
+/* Mobile fix: background-attachment: fixed is buggy on many phones */
+@media (max-width: 768px) {
+  .hero.celebration-hero {
+    background-attachment: scroll;
+  }
 }
 
 /* Welcome section */
@@ -374,7 +428,6 @@ img {
 
 .card-img {
   width: 100%;
-  /* Set a fixed height for card images so all three cards align on the same line regardless of image aspect ratio */
   height: 280px;
   object-fit: cover;
   display: block;
@@ -426,7 +479,6 @@ img {
   color: var(--dark);
 }
 
-/* Ensure highlighted text inside the campus callout inherits the dark color */
 .campus-title .text-highlight {
   color: inherit;
 }
@@ -460,15 +512,11 @@ img {
   text-align: left;
 }
 
-/* Visit section images should fill the card area without borders */
 .visit-img {
   width: 100%;
-  /* Fixed height to maintain consistent card dimensions */
   height: 200px;
-  /* Use object-fit: cover so the image fills the space and avoids empty borders */
   object-fit: cover;
   display: block;
-  /* Remove background color to prevent visible borders */
   background-color: transparent;
 }
 
@@ -491,7 +539,6 @@ img {
 .boast-section {
   position: relative;
   padding: 6rem 0;
-  /* Updated background image for the boast section per user request */
   background: url('../images/boast_new.jpg') center/cover no-repeat;
   color: var(--light);
   text-align: center;
@@ -672,9 +719,7 @@ img {
   color: #576e8a;
 }
 
-/* Ensure images display fully without cropping */
-/* Ensure images display fully without cropping
-   Removed .visit-img here so it can have a fixed height (set above) */
+/* Ensure images display fully without cropping (except fixed-height ones) */
 .card-img,
 .community-img,
 .ministries-img {
@@ -684,17 +729,13 @@ img {
 }
 
 /* Giving section */
-/* Updated giving section to reflect the reference design: lighter background and dark text */
-/* Style the giving section to include a decorative blue line art graphic, similar to the reference. */
 .giving-section {
   padding: 5rem 0;
-  /* Keep a very light overall background so the tinted panel stands out */
   background: var(--light);
   color: var(--dark);
   text-align: center;
 }
 
-/* Wrap the giving content in a tinted panel with rounded corners */
 .giving-container {
   position: relative;
   max-width: 1000px;
@@ -705,7 +746,6 @@ img {
   overflow: hidden;
 }
 
-/* Position the hand line art on the right side of the panel */
 .giving-graphic {
   position: absolute;
   top: 0;
@@ -722,6 +762,42 @@ img {
   width: 100%;
   height: 100%;
   opacity: 0.2;
+}
+
+.giving-graphic path {
+  stroke: var(--secondary);
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.giving-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.giving-text {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.giving-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.giving-buttons .btn-secondary {
+  border: none;
+  background: #054478;
+  color: #ffffff;
+}
+
+.giving-buttons .btn-secondary:hover {
+  background: #306aa1;
+  color: #ffffff;
 }
 
 /* Call to Action Section */
@@ -747,53 +823,47 @@ img {
   margin-right: auto;
 }
 
-.giving-graphic path {
-  /* Use a lighter blue for the line art and slightly thinner stroke */
-  stroke: var(--secondary);
-  stroke-width: 3;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.giving-title {
-  /* Enlarge giving title to mimic reference design */
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.giving-text {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-}
-
-.giving-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.giving-buttons .btn-secondary {
-  /* Make the secondary button (Building Project) clearly visible on the light background */
-  /* Use a solid dark blue fill with white text instead of a light border which is hard to see */
-  border: none;
-  background: #054478; /* dark accent blue */
-  color: #ffffff;
-}
-
-.giving-buttons .btn-secondary:hover {
-  /* On hover, lighten the button slightly while keeping text dark for contrast */
-  background: #306aa1; /* use the primary blue shade on hover */
-  color: #ffffff;
-}
-
 /* Mailing list section */
 .mailing-section {
   padding: 5rem 0;
   background: var(--dark);
   color: var(--light);
   text-align: center;
+}
+
+.mailing-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.mailing-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.mailing-text {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  color: #cdd8e4;
+}
+
+.mailing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mailing-form input {
+  padding: 0.75rem 1rem;
+  border-radius: 30px;
+  border: none;
+  font-size: 1rem;
+  outline: none;
+}
+
+.mailing-form button {
+  border: none;
 }
 
 /* Sign Up Form Styles */
@@ -850,41 +920,6 @@ img {
 .signup-form button[type="submit"] {
   margin-top: 1rem;
   width: 200px;
-}
-
-.mailing-container {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.mailing-title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
-}
-
-.mailing-text {
-  font-size: 1rem;
-  margin-bottom: 2rem;
-  color: #cdd8e4;
-}
-
-.mailing-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.mailing-form input {
-  padding: 0.75rem 1rem;
-  border-radius: 30px;
-  border: none;
-  font-size: 1rem;
-  outline: none;
-}
-
-.mailing-form button {
-  border: none;
 }
 
 /* Footer */
@@ -948,7 +983,6 @@ img {
   font-size: 1.25rem;
 }
 
-/* Use images for social icons: scale them uniformly */
 .social-icons img {
   height: 20px;
   width: auto;
@@ -966,7 +1000,6 @@ img {
   .hamburger {
     display: flex;
   }
-  /* Mobile navigation opened state */
   .nav-list.open {
     display: flex;
     position: absolute;
@@ -993,12 +1026,8 @@ img {
 }
 
 /* -------------------------------------------- */
-/* Custom styles for the About page redesign    */
-/* These styles mirror the layout of the joincci
-   about page while keeping the Waterbrooks
-   colour palette.                             */
+/* About page redesign                          */
 
-/* Full-width hero banner for the About page */
 .about-hero {
   position: relative;
   display: flex;
@@ -1010,6 +1039,7 @@ img {
   color: var(--light);
   overflow: hidden;
 }
+
 .about-hero::before {
   content: '';
   position: absolute;
@@ -1020,28 +1050,29 @@ img {
   background: rgba(5, 68, 120, 0.7);
   z-index: 0;
 }
+
 .about-hero h1 {
   font-size: 3rem;
   font-weight: 700;
   line-height: 1.2;
   z-index: 1;
 }
+
 .about-hero h1 .highlight {
   color: var(--secondary);
 }
 
-/* Wrap hero text for z-index layering */
 .about-hero-overlay {
   position: relative;
   z-index: 1;
   padding: 0 1rem;
 }
 
-/* New introduction section below hero replicating joincci layout */
 .about-service {
   padding: 4rem 0;
   background: var(--light);
 }
+
 .about-service .service-container {
   display: flex;
   flex-wrap: wrap;
@@ -1049,6 +1080,7 @@ img {
   justify-content: space-between;
   gap: 2rem;
 }
+
 .about-service .service-heading {
   flex: 1 1 40%;
   font-size: 3rem;
@@ -1056,23 +1088,25 @@ img {
   line-height: 1.2;
   color: var(--dark);
 }
+
 .about-service .service-heading .highlight {
   color: var(--primary);
 }
+
 .about-service .service-text {
   flex: 1 1 55%;
   font-size: 1rem;
   line-height: 1.6;
   color: #4a5f82;
 }
+
 .about-service .service-text p {
   margin-bottom: 1rem;
 }
 
-/* Belief section redesign inspired by joincci, but using our blue palette */
+/* Belief section */
 .belief-section {
   padding: 5rem 0;
-  /* Create a rich gradient background similar to the reference site */
   background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
   color: var(--light);
 }
@@ -1087,7 +1121,6 @@ img {
   gap: 2rem;
 }
 
-/* Content area on the left: white card with text */
 .belief-section .belief-content {
   flex: 1 1 50%;
   background: var(--light);
@@ -1096,34 +1129,38 @@ img {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
 .belief-section .belief-content h2 {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
+
 .belief-section .belief-content h2 .black-text {
   color: var(--dark);
 }
+
 .belief-section .belief-content h2 .emphasis {
-  /* Use the secondary accent color for stronger contrast */
   color: var(--secondary);
 }
+
 .belief-section .belief-content .belief-list {
   margin-left: 1rem;
   list-style: disc;
 }
+
 .belief-section .belief-content .belief-list li {
   margin-bottom: 0.8rem;
   font-size: 1rem;
   color: #4a5f82;
 }
 
-/* Image area on the right */
 .belief-section .belief-image {
   flex: 1 1 45%;
   position: relative;
 }
+
 .belief-section .belief-image img {
   width: 100%;
   height: 100%;
@@ -1136,6 +1173,7 @@ img {
   padding: 4rem 0;
   background: var(--light);
 }
+
 .about-intro-static .intro-container {
   display: flex;
   flex-wrap: wrap;
@@ -1143,6 +1181,7 @@ img {
   justify-content: space-between;
   gap: 2rem;
 }
+
 .about-intro-static .intro-heading {
   flex: 1 1 40%;
   font-size: 2.5rem;
@@ -1150,15 +1189,18 @@ img {
   color: var(--dark);
   line-height: 1.2;
 }
+
 .about-intro-static .intro-heading .text-highlight {
   color: var(--primary);
 }
+
 .about-intro-static .intro-text {
   flex: 1 1 55%;
   font-size: 1rem;
   line-height: 1.6;
   color: #4a5f82;
 }
+
 .about-intro-static .intro-text p {
   margin-bottom: 1rem;
 }
@@ -1169,6 +1211,7 @@ img {
   overflow: hidden;
   padding: 5rem 0;
 }
+
 .belief-gradient::before {
   content: '';
   position: absolute;
@@ -1176,10 +1219,10 @@ img {
   left: 0;
   width: 100%;
   height: 100%;
-  /* diagonal gradient using the Waterbrooks palette */
   background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
   z-index: 0;
 }
+
 .belief-gradient .belief-inner {
   position: relative;
   z-index: 1;
@@ -1188,14 +1231,17 @@ img {
   align-items: center;
   gap: 2rem;
 }
+
 .belief-gradient .belief-image {
   flex: 1 1 45%;
 }
+
 .belief-gradient .belief-image img {
   border-radius: 8px;
   width: 100%;
   height: auto;
 }
+
 .belief-gradient .belief-content {
   flex: 1 1 50%;
   background: var(--light);
@@ -1204,17 +1250,21 @@ img {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
 .belief-gradient .belief-content h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
   font-weight: 700;
 }
+
 .belief-gradient .belief-content h2 .emphasis {
   color: var(--primary);
 }
+
 .belief-gradient .belief-list {
   margin-left: 1rem;
 }
+
 .belief-gradient .belief-list li {
   margin-bottom: 0.75rem;
   font-size: 1rem;
@@ -1222,11 +1272,7 @@ img {
   list-style: disc;
 }
 
-/*
- * Leadership Section
- * Inspired by the joincci about page, this section has a dark background
- * with light text and a two‑column layout for the image and bio.
- */
+/* Leadership Section */
 .leadership-section {
   padding: 4rem 0;
   background: var(--primary);
@@ -1280,37 +1326,40 @@ img {
   margin-bottom: 1rem;
 }
 
-/*
- * Member stories slider styles
- * Only the active slide is displayed, others are hidden. The dots allow navigation.
- */
+/* Member stories slider styles */
 .experience-section {
   padding: 4rem 0;
   background: var(--light);
 }
+
 .experience-slider .slide {
   display: none;
 }
+
 .experience-slider .slide.active {
   display: block;
 }
+
 .experience-slider .slide h3 {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: var(--dark);
 }
+
 .experience-slider .slide p {
   font-size: 1rem;
   line-height: 1.6;
   color: #4a5f82;
 }
+
 .slider-dots {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
   margin-top: 1rem;
 }
+
 .slider-dots .dot {
   width: 10px;
   height: 10px;
@@ -1320,9 +1369,11 @@ img {
   cursor: pointer;
   transition: opacity 0.3s;
 }
+
 .slider-dots .dot.active {
   opacity: 1;
 }
+
 /* Fullscreen overlay */
 .modal-overlay {
   position: fixed;
@@ -1341,7 +1392,6 @@ img {
   width: min(1100px, 100%);
   max-height: 90vh;
   overflow-y: auto;
-
   background: #000;
   color: #fff;
   padding: 3rem;
@@ -1370,10 +1420,8 @@ img {
   position: absolute;
   top: 18px;
   right: 18px;
-
   width: 44px;
   height: 44px;
-
   background: transparent;
   border: 1px solid #fff;
   color: #fff;
@@ -1386,7 +1434,7 @@ img {
   display: flex;
 }
 
-/* Mobile */
+/* Mobile modal */
 @media (max-width: 768px) {
   .modal-content {
     padding: 1.75rem;
@@ -1395,22 +1443,7 @@ img {
     grid-template-columns: 1fr;
   }
 }
-/* =====================================
-   Celebration page ONLY – static background
-   ===================================== */
 
-.celebration-hero {
-  background-image: url("../images/celev.jpg") !important;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
-  /* THIS is what makes it static */
-  background-attachment: fixed;
-
-  min-height: 85vh;
-  position: relative;
-}
 /* ===== Give Modal Popup ===== */
 .give-modal {
   position: fixed;
@@ -1422,6 +1455,7 @@ img {
   padding: 24px;
   z-index: 9999;
 }
+
 .give-modal.is-open { display: flex; }
 
 .give-modal__card {

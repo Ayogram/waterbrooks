@@ -69,6 +69,7 @@
           <h2 class="giving-title">Give to Waterbrooks Ministry International</h2>
           <p class="giving-text">Your generosity keeps blessing lives; thank you for giving.</p>
           <div class="giving-buttons">
+            <!-- Recommended: button, not anchor -->
            <a href="#giveModal" class="btn btn-primary" id="giveNowBtn">Give Now</a>
           </div>
         </div>
@@ -171,7 +172,7 @@
     <!-- GIVE POPUP MODAL -->
     <div id="giveModal" class="give-modal" aria-hidden="true">
       <div class="give-modal__card" role="dialog" aria-modal="true" aria-labelledby="giveModalTitle">
-       <a class="give-modal__close" href="#" id="closeGiveModal" aria-label="Close">&times;</a>
+        <a class="give-modal__close" href="#" id="closeGiveModal" aria-label="Close">&times;</a>
 
         <div class="give-modal__header">
           <h3 id="giveModalTitle">NAIRA ACCOUNT</h3>
@@ -192,7 +193,7 @@
               <p class="give-acct" id="accountNumberText">0015743652</p>
             </div>
 
-            <button class="give-copy-btn" id="copyAccountBtn" aria-label="Copy account number" title="Copy">
+            <button class="give-copy-btn" id="copyAccountBtn" aria-label="Copy account number" title="Copy" type="button">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"
@@ -215,8 +216,7 @@
       </div>
     </div>
 
-    <!-- Use ONE script file (the one that contains hamburger + give modal logic) -->
+    <!-- ONE script tag only -->
     <script src="js/script.js"></script>
   </body>
 </html>
-<script src="js/script.js"></script>

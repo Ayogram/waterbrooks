@@ -1,4 +1,4 @@
-/*
+/* 
  * Waterbrooks site scripts
  */
 
@@ -119,65 +119,173 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // GIVE MODAL POPUP (Give Page)
+  // GIVE MODAL POPUP (Give Page) ✅ WORKS ON MOBILE + PC
   // =========================
-  const giveBtn = document.getElementById("giveNowBtn");
-  const modal = document.getElementById("giveModal");
-  const closeBtn = document.getElementById("closeGiveModal");
-  const copyBtn = document.getElementById("copyAccountBtn");
-  const acctText = document.getElementById("accountNumberText");
-  const statusText = document.getElementById("copyStatusText");
+  const giveBtn = document.getElementById("giveNowBtn");          // <a href="#giveModal" ...>
+  const modal = document.getElementById("giveModal");             // <div id="giveModal" ...>
+  const closeBtn = document.getElementById("closeGiveModal");     // <a href="#" id="closeGiveModal"...>
+  const copyBtn = document.getElementById("copyAccountBtn");      // <button id="copyAccountBtn"...>
+  const acctText = document.getElementById("accountNumberText");  // <p id="accountNumberText"...>
+  const statusText = document.getElementById("copyStatusText");   // <p id="copyStatusText"...>
 
-  // If not on Give page, exit cleanly
+  const setStatus = (msg) => {
+    if (!statusText) return;
+    statusText.textContent = msg;
+    setTimeout(() => {
+      statusText.textContent = "";
+    }, 2000);
+  };
+
+  const copyFallback = (text) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    ta.style.top = "-9999px";
+    document.body.appendChild(ta);
+
+    // iOS needs selection in a user gesture
+    ta.focus();
+    ta.select();
+
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch (e) {
+      ok = false;
+    }
+
+    document.body.removeChild(ta);
+    return ok;
+  };
+
+  const openModal = () => {
+    if (!modal) return;
+
+    // Ensure modal is interactive only when open
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+
+    // Support anchor-based (#giveModal) behavior too
+    if (window.location.hash !== "#giveModal") {
+      window.location.hash = "giveModal";
+    }
+  };
+
+  const closeModal = () => {
+    if (!modal) return;
+
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+
+    if (statusText) statusText.textContent = "";
+
+    // Clear hash so it doesn't stay stuck on #giveModal
+    if (window.location.hash === "#giveModal") {
+      history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+  };
+
+  // Bind only if Give elements exist
   if (giveBtn && modal) {
-    // Debug (you can remove later)
-    // console.log("Give modal initialized");
-
-    // Defensive: ensure button can receive clicks even if overlays exist
-    giveBtn.style.position = "relative";
-    giveBtn.style.zIndex = "20";
-    giveBtn.style.pointerEvents = "auto";
-
-    const openModal = () => {
-      modal.classList.add("is-open");
-      modal.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
+    // Open: handle both click + touch (mobile)
+    const handleOpen = (e) => {
+      // If it's an <a href="#giveModal">, prevent browser jump
+      e.preventDefault();
+      openModal();
     };
 
-    const closeModal = () => {
-      modal.classList.remove("is-open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-      if (statusText) statusText.textContent = "";
+    giveBtn.addEventListener("click", handleOpen);
+    giveBtn.addEventListener("touchend", handleOpen, { passive: false });
+
+    // Close button is <a href="#">, prevent navigation to top
+    const handleClose = (e) => {
+      e.preventDefault();
+      closeModal();
     };
 
-    // Use both click + pointerup for stubborn overlay/click issues
-    giveBtn.addEventListener("click", openModal);
-    giveBtn.addEventListener("pointerup", openModal);
+    closeBtn?.addEventListener("click", handleClose);
+    closeBtn?.addEventListener("touchend", handleClose, { passive: false });
 
-    closeBtn?.addEventListener("click", closeModal);
-
+    // Click outside card closes (but only when open)
     modal.addEventListener("click", (e) => {
       if (e.target === modal) closeModal();
     });
 
+    // Esc closes
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+      if (e.key === "Escape" && (modal.classList.contains("is-open") || window.location.hash === "#giveModal")) {
+        closeModal();
+      }
     });
 
-    if (copyBtn && acctText) {
-      copyBtn.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(acctText.textContent.trim());
-          if (statusText) statusText.textContent = "Account number copied!";
-          setTimeout(() => {
-            if (statusText) statusText.textContent = "";
-          }, 2000);
-        } catch (err) {
-          if (statusText) statusText.textContent = "Copy failed. Please copy manually.";
-        }
-      });
+    // If user loads the page already with #giveModal, open it
+    if (window.location.hash === "#giveModal") {
+      openModal();
     }
+
+    // Copy account number ✅ (Clipboard API + fallback + prompt)
+   if (copyBtn && acctText) {
+  const hardCopy = (text) => {
+    // Most reliable fallback for mobile + http
+    const input = document.createElement("input");
+    input.value = text;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.style.top = "-9999px";
+    document.body.appendChild(input);
+
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch (e) {
+      ok = false;
+    }
+
+    document.body.removeChild(input);
+    return ok;
+  };
+
+  const handleCopy = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const value = (acctText.textContent || "").trim();
+    if (!value) return setStatus("No account number found.");
+
+    // Try modern clipboard first (works on https / localhost)
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        await navigator.clipboard.writeText(value);
+        return setStatus("Account number copied!");
+      }
+    } catch (err) {
+      // ignore and fallback
+    }
+
+    // Fallback that works on many mobile browsers
+    const ok = hardCopy(value);
+    if (ok) return setStatus("Account number copied!");
+
+    // Last resort: always gives user the number to copy manually
+    window.prompt("Copy account number:", value);
+    setStatus("Tap and hold to copy.");
+  };
+
+  // IMPORTANT: pointerdown works better than click/touchend in some mobile browsers
+  copyBtn.addEventListener("pointerdown", handleCopy);
+  copyBtn.addEventListener("click", handleCopy);
+}
+
+
   }
 
   // =========================

@@ -42,6 +42,7 @@
           aria-label="Open menu"
           aria-expanded="false"
           aria-controls="mobileNav"
+          type="button"
         >
           <span></span>
           <span></span>
@@ -57,7 +58,8 @@
         <span class="pill">Support</span>
         <h1 class="hero-title">Partner with Waterbrooks</h1>
         <p class="hero-text">
-          Your generosity fuels our mission to raise godly leaders and carry the healing power of God to the nations.
+          Your generosity fuels our mission to raise godly leaders and carry the
+          healing power of God to the nations.
         </p>
       </div>
     </section>
@@ -67,10 +69,11 @@
       <div class="container giving-container">
         <div class="giving-content">
           <h2 class="giving-title">Give to Waterbrooks Ministry International</h2>
-          <p class="giving-text">Your generosity keeps blessing lives; thank you for giving.</p>
+          <p class="giving-text">
+            Your generosity keeps blessing lives; thank you for giving.
+          </p>
           <div class="giving-buttons">
-            <!-- Recommended: button, not anchor -->
-           <a href="#giveModal" class="btn btn-primary" id="giveNowBtn">Give Now</a>
+            <button type="button" class="btn btn-primary" id="giveNowBtn">Give Now</button>
           </div>
         </div>
 
@@ -88,9 +91,11 @@
       <div class="container mailing-container">
         <h2 class="mailing-title">Join our mailing list</h2>
         <p class="mailing-text">
-          We promise not to spam you, but send you edifying and amazing content regularly from Waterbrooks Ministry International.
+          We promise not to spam you, but send you edifying and amazing content
+          regularly from Waterbrooks Ministry International.
         </p>
 
+        <!-- Hidden iframe for reliable Google Apps Script submit -->
         <iframe name="hidden_iframe" style="display:none;"></iframe>
 
         <form
@@ -103,7 +108,14 @@
           <input type="hidden" name="formType" value="email" />
           <input type="hidden" name="page" id="mailingPage" />
 
-          <input type="email" name="email" id="mailingEmail" placeholder="Email" required />
+          <input
+            type="email"
+            name="email"
+            id="mailingEmail"
+            placeholder="Email"
+            required
+            autocomplete="email"
+          />
           <button type="submit" class="btn btn-primary" id="mailingBtn">Submit</button>
         </form>
       </div>
@@ -136,7 +148,11 @@
             <h4>Media</h4>
             <ul>
               <li>
-                <a href="https://www.youtube.com/@Thebrooksnation" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://www.youtube.com/@Thebrooksnation"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Watch Online
                 </a>
               </li>
@@ -172,8 +188,14 @@
     <!-- GIVE POPUP MODAL -->
     <div id="giveModal" class="give-modal" aria-hidden="true">
       <div class="give-modal__card" role="dialog" aria-modal="true" aria-labelledby="giveModalTitle">
-        <a class="give-modal__close" href="#" id="closeGiveModal" aria-label="Close">&times;</a>
-
+<button
+  class="give-modal__close"
+  id="closeGiveModal"
+  type="button"
+  aria-label="Close"
+>
+  &times;
+</button>
         <div class="give-modal__header">
           <h3 id="giveModalTitle">NAIRA ACCOUNT</h3>
         </div>
@@ -193,7 +215,13 @@
               <p class="give-acct" id="accountNumberText">0015743652</p>
             </div>
 
-            <button class="give-copy-btn" id="copyAccountBtn" aria-label="Copy account number" title="Copy" type="button">
+            <button
+              class="give-copy-btn"
+              id="copyAccountBtn"
+              aria-label="Copy account number"
+              title="Copy"
+              type="button"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"
@@ -217,6 +245,6 @@
     </div>
 
     <!-- ONE script tag only -->
-    <script src="js/script.js"></script>
+    <script src="js/main.js" defer></script>
   </body>
 </html>

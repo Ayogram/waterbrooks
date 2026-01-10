@@ -1,6 +1,4 @@
-/* 
- * Waterbrooks site scripts
- */
+/* Waterbrooks site scripts (single source of truth) */
 
 document.addEventListener("DOMContentLoaded", () => {
   // =========================
@@ -15,39 +13,34 @@ document.addEventListener("DOMContentLoaded", () => {
     hamburger.setAttribute("aria-expanded", "false");
   };
 
-  hamburger?.addEventListener("click", () => {
-    if (!navList) return;
-    const isOpen = navList.classList.toggle("open");
-    hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  });
+  if (hamburger && navList) {
+    hamburger.addEventListener("click", () => {
+      const isOpen = navList.classList.toggle("open");
+      hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
 
-  // Close menu when you click any menu link (mobile)
-  document.querySelectorAll(".nav-list .nav-link").forEach((link) => {
-    link.addEventListener("click", closeMenu);
-  });
+    // Close menu when you click any menu link (mobile)
+    document.querySelectorAll(".nav-list .nav-link").forEach((link) => {
+      link.addEventListener("click", closeMenu);
+    });
 
-  // Close menu if user taps outside the dropdown
-  document.addEventListener("click", (e) => {
-    if (!navList || !hamburger) return;
+    // Close menu if user taps outside the dropdown
+    document.addEventListener("click", (e) => {
+      const clickedInsideMenu = navList.contains(e.target);
+      const clickedHamburger = hamburger.contains(e.target);
+      if (!clickedInsideMenu && !clickedHamburger) closeMenu();
+    });
 
-    const clickedInsideMenu = navList.contains(e.target);
-    const clickedHamburger = hamburger.contains(e.target);
-
-    if (!clickedInsideMenu && !clickedHamburger) {
-      closeMenu();
-    }
-  });
-
-  // Close menu on Escape key
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenu();
-  });
+    // Close menu on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+  }
 
   // =========================
-  // Hero background slideshow (with preload to prevent flash)
+  // Hero background slideshow (optional)
   // =========================
   const heroSection = document.querySelector(".hero");
-
   if (heroSection) {
     const heroImages = [
       "images/hero.jpg",
@@ -59,33 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     let currentHeroIndex = 0;
-    let slideshowTimer = null;
 
-    const preloadImage = (src) =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve({ src, ok: true });
-        img.onerror = () => resolve({ src, ok: false });
-        img.src = src;
-      });
-
-    const startSlideshow = () => {
-      if (slideshowTimer) return;
-
-      slideshowTimer = setInterval(() => {
-        currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
-        heroSection.style.backgroundImage = `url('${heroImages[currentHeroIndex]}')`;
-      }, 5000);
-    };
-
-    preloadImage(heroImages[0]).then(() => {
-      heroSection.style.backgroundImage = `url('${heroImages[0]}')`;
-      document.body.classList.add("hero-ready");
-    });
-
-    Promise.all(heroImages.slice(1).map(preloadImage)).then(() => {
-      startSlideshow();
-    });
+    setInterval(() => {
+      currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
+      heroSection.style.backgroundImage = `url('${heroImages[currentHeroIndex]}')`;
+    }, 5000);
   }
 
   // =========================
@@ -102,31 +73,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =========================
-  // Member stories slider dots
+  // GIVE MODAL (Give Page)
   // =========================
-  const sliderDots = document.querySelectorAll(".slider-dots .dot");
-  const experienceSlides = document.querySelectorAll(".experience-slides .slide");
+  const giveBtn = document.getElementById("giveNowBtn");
+  const modal = document.getElementById("giveModal");
+  const closeBtn = document.getElementById("closeGiveModal");
 
-  if (sliderDots.length && experienceSlides.length) {
-    sliderDots.forEach((dot, index) => {
-      dot.addEventListener("click", () => {
-        experienceSlides.forEach((slide) => slide.classList.remove("active"));
-        sliderDots.forEach((d) => d.classList.remove("active"));
-        experienceSlides[index].classList.add("active");
-        dot.classList.add("active");
-      });
-    });
-  }
-
-  // =========================
-  // GIVE MODAL POPUP (Give Page) ✅ WORKS ON MOBILE + PC
-  // =========================
-  const giveBtn = document.getElementById("giveNowBtn");          // <a href="#giveModal" ...>
-  const modal = document.getElementById("giveModal");             // <div id="giveModal" ...>
-  const closeBtn = document.getElementById("closeGiveModal");     // <a href="#" id="closeGiveModal"...>
-  const copyBtn = document.getElementById("copyAccountBtn");      // <button id="copyAccountBtn"...>
-  const acctText = document.getElementById("accountNumberText");  // <p id="accountNumberText"...>
-  const statusText = document.getElementById("copyStatusText");   // <p id="copyStatusText"...>
+  const copyBtn = document.getElementById("copyAccountBtn");
+  const acctText = document.getElementById("accountNumberText");
+  const statusText = document.getElementById("copyStatusText");
 
   const setStatus = (msg) => {
     if (!statusText) return;
@@ -136,101 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000);
   };
 
-  const copyFallback = (text) => {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    ta.style.top = "-9999px";
-    document.body.appendChild(ta);
-
-    // iOS needs selection in a user gesture
-    ta.focus();
-    ta.select();
-
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch (e) {
-      ok = false;
-    }
-
-    document.body.removeChild(ta);
-    return ok;
-  };
-
-  const openModal = () => {
-    if (!modal) return;
-
-    // Ensure modal is interactive only when open
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-
-    // Support anchor-based (#giveModal) behavior too
-    if (window.location.hash !== "#giveModal") {
-      window.location.hash = "giveModal";
-    }
-  };
-
-  const closeModal = () => {
-    if (!modal) return;
-
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-
-    if (statusText) statusText.textContent = "";
-
-    // Clear hash so it doesn't stay stuck on #giveModal
-    if (window.location.hash === "#giveModal") {
-      history.pushState("", document.title, window.location.pathname + window.location.search);
-    }
-  };
-
-  // Bind only if Give elements exist
-  if (giveBtn && modal) {
-    // Open: handle both click + touch (mobile)
-    const handleOpen = (e) => {
-      // If it's an <a href="#giveModal">, prevent browser jump
-      e.preventDefault();
-      openModal();
-    };
-
-    giveBtn.addEventListener("click", handleOpen);
-    giveBtn.addEventListener("touchend", handleOpen, { passive: false });
-
-    // Close button is <a href="#">, prevent navigation to top
-    const handleClose = (e) => {
-      e.preventDefault();
-      closeModal();
-    };
-
-    closeBtn?.addEventListener("click", handleClose);
-    closeBtn?.addEventListener("touchend", handleClose, { passive: false });
-
-    // Click outside card closes (but only when open)
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    // Esc closes
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && (modal.classList.contains("is-open") || window.location.hash === "#giveModal")) {
-        closeModal();
-      }
-    });
-
-    // If user loads the page already with #giveModal, open it
-    if (window.location.hash === "#giveModal") {
-      openModal();
-    }
-
-    // Copy account number ✅ (Clipboard API + fallback + prompt)
-   if (copyBtn && acctText) {
   const hardCopy = (text) => {
-    // Most reliable fallback for mobile + http
     const input = document.createElement("input");
     input.value = text;
     input.setAttribute("readonly", "");
@@ -246,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let ok = false;
     try {
       ok = document.execCommand("copy");
-    } catch (e) {
+    } catch {
       ok = false;
     }
 
@@ -254,42 +115,87 @@ document.addEventListener("DOMContentLoaded", () => {
     return ok;
   };
 
-  const handleCopy = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+ const openModal = () => {
+  if (!modal) return;
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+};
 
-    const value = (acctText.textContent || "").trim();
-    if (!value) return setStatus("No account number found.");
 
-    // Try modern clipboard first (works on https / localhost)
-    try {
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-        await navigator.clipboard.writeText(value);
-        return setStatus("Account number copied!");
+ const closeModal = () => {
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  if (statusText) statusText.textContent = "";
+};
+
+
+
+  if (giveBtn && modal) {
+    const handleOpen = (e) => {
+      e.preventDefault();
+      openModal();
+    };
+
+    giveBtn.addEventListener("click", handleOpen);
+    giveBtn.addEventListener("touchend", handleOpen, { passive: false });
+
+    const handleClose = (e) => {
+      e.preventDefault();
+      closeModal();
+    };
+
+    closeBtn?.addEventListener("click", handleClose);
+    closeBtn?.addEventListener("touchend", handleClose, { passive: false });
+
+    // Click outside card closes
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Esc closes
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && (modal.classList.contains("is-open") || window.location.hash === "#giveModal")) {
+        closeModal();
       }
-    } catch (err) {
-      // ignore and fallback
-    }
-
-    // Fallback that works on many mobile browsers
-    const ok = hardCopy(value);
-    if (ok) return setStatus("Account number copied!");
-
-    // Last resort: always gives user the number to copy manually
-    window.prompt("Copy account number:", value);
-    setStatus("Tap and hold to copy.");
-  };
-
-  // IMPORTANT: pointerdown works better than click/touchend in some mobile browsers
-  copyBtn.addEventListener("pointerdown", handleCopy);
-  copyBtn.addEventListener("click", handleCopy);
-}
-
+    });
 
   }
 
+  // Copy account number
+  if (copyBtn && acctText) {
+    const handleCopy = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const value = (acctText.textContent || "").trim();
+      if (!value) return setStatus("No account number found.");
+
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          await navigator.clipboard.writeText(value);
+          return setStatus("Account number copied!");
+        }
+      } catch {
+        // fallback below
+      }
+
+      const ok = hardCopy(value);
+      if (ok) return setStatus("Account number copied!");
+
+      window.prompt("Copy account number:", value);
+      setStatus("Tap and hold to copy.");
+    };
+
+    copyBtn.addEventListener("pointerdown", handleCopy);
+    copyBtn.addEventListener("click", handleCopy);
+  }
+
   // =========================
-  // Mailing List Submission (iframe submit)
+  // Mailing List Submission (IFRAME submit - reliable)
+  // IMPORTANT: This assumes your form has action+method+target="hidden_iframe"
   // =========================
   const mailingForm = document.getElementById("mailingForm");
   const pageInput = document.getElementById("mailingPage");
@@ -297,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (mailingForm) {
     mailingForm.addEventListener("submit", () => {
+      // DO NOT preventDefault() — let the form post to Google Apps Script
       if (pageInput) pageInput.value = window.location.pathname;
 
       if (mailingBtn) {
@@ -304,6 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         mailingBtn.textContent = "Submitting...";
       }
 
+      // We can't read the iframe response (cross-origin), so we show a friendly confirmation
       setTimeout(() => {
         alert("Thank you. You have been added to our mailing list.");
         mailingForm.reset();
@@ -315,21 +223,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 1200);
     });
   }
-
+    // =========================
+  // Generic IFRAME form helper (reliable on localhost + production)
   // =========================
-  // Signup Form
-  // =========================
-  const signupForm = document.getElementById("signupForm");
-  if (signupForm) {
-    const btn = document.getElementById("signupSubmitBtn");
-    const hiddenAge = document.getElementById("ageGroupCombined");
+  const wireIframeForm = ({
+    formId,
+    btnId,
+    successMessage,
+    beforeSubmit, // optional callback
+  }) => {
+    const form = document.getElementById(formId);
+    if (!form) return;
 
-    signupForm.addEventListener("submit", () => {
-      const checked = Array.from(signupForm.querySelectorAll('input[name="ageGroup"]:checked')).map(
-        (cb) => cb.value
-      );
+    const btn = btnId ? document.getElementById(btnId) : null;
 
-      if (hiddenAge) hiddenAge.value = checked.join(", ");
+    form.addEventListener("submit", () => {
+      // Do NOT preventDefault — let it POST normally (usually into hidden iframe)
+
+      try {
+        if (typeof beforeSubmit === "function") beforeSubmit(form);
+      } catch (e) {
+        console.error(e);
+      }
 
       if (btn) {
         btn.disabled = true;
@@ -337,10 +252,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       setTimeout(() => {
-        alert("Thank you. Your signup has been received.");
-        signupForm.reset();
-
-        if (hiddenAge) hiddenAge.value = "";
+        alert(successMessage);
+        form.reset();
 
         if (btn) {
           btn.disabled = false;
@@ -348,80 +261,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }, 1200);
     });
-  }
+  };
 
   // =========================
-  // Celebration Form
+  // SIGNUP FORM
   // =========================
-  const celebrationForm = document.getElementById("celebrationForm");
-  const celebrationBtn = document.getElementById("celebrationSubmitBtn");
+  wireIframeForm({
+    formId: "signupForm",
+    btnId: "signupSubmitBtn",
+    successMessage: "Thank you. Your signup has been received.",
+    beforeSubmit: (form) => {
+      // If you use checkboxes for ageGroup and want a combined hidden field:
+      const hiddenAge = document.getElementById("ageGroupCombined");
+      if (!hiddenAge) return;
 
-  if (celebrationForm) {
-    celebrationForm.addEventListener("submit", () => {
-      if (celebrationBtn) {
-        celebrationBtn.disabled = true;
-        celebrationBtn.textContent = "Submitting...";
-      }
+      const checked = Array.from(form.querySelectorAll('input[name="ageGroup"]:checked')).map(
+        (cb) => cb.value
+      );
 
-      setTimeout(() => {
-        alert("Thank you. Your celebration request has been received.");
-        celebrationForm.reset();
-
-        if (celebrationBtn) {
-          celebrationBtn.disabled = false;
-          celebrationBtn.textContent = "Submit";
-        }
-      }, 1200);
-    });
-  }
-
-  // =========================
-  // Contact Form
-  // =========================
-  const contactForm = document.getElementById("contactForm");
-  const contactBtn = document.getElementById("contactSubmitBtn");
-
-  if (contactForm) {
-    contactForm.addEventListener("submit", () => {
-      if (contactBtn) {
-        contactBtn.disabled = true;
-        contactBtn.textContent = "Submitting...";
-      }
-
-      setTimeout(() => {
-        alert("Thank you. Your message has been received. We will get back to you shortly.");
-        contactForm.reset();
-
-        if (contactBtn) {
-          contactBtn.disabled = false;
-          contactBtn.textContent = "Submit";
-        }
-      }, 1200);
-    });
-  }
-});
-
-// ===== Google Sheets Web App URL =====
-const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycby3Py_tvc4kdqgbEdp7tV8jtHlYu6yBiAN45pFgBWXrS89lsF18Cb6qeqTDThkko0MRTg/exec";
-
-// Reliable Apps Script POST (avoids preflight/CORS issues)
-async function sendToSheets(formType, data) {
-  const res = await fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    redirect: "follow",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ formType, data }),
+      hiddenAge.value = checked.join(", ");
+    },
   });
 
-  const text = await res.text();
-  let result = {};
-  try {
-    result = JSON.parse(text);
-  } catch {
-    result = { ok: false, error: text };
-  }
+  // =========================
+  // CONTACT FORM
+  // =========================
+  wireIframeForm({
+    formId: "contactForm",
+    btnId: "contactSubmitBtn",
+    successMessage: "Thank you. Your message has been received. We will get back to you shortly.",
+  });
 
-  if (!result.ok) throw new Error(result.error || "Submission failed");
-  return result;
-}
+  // =========================
+  // CELEBRATION FORM (if present)
+  // =========================
+  wireIframeForm({
+    formId: "celebrationForm",
+    btnId: "celebrationSubmitBtn",
+    successMessage: "Thank you. Your celebration request has been received.",
+  });
+
+});

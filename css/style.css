@@ -1373,7 +1373,9 @@ body.hero-ready .hero-overlay {
   margin-bottom: 1rem;
 }
 
-/* Member stories slider styles */
+/* =========================================================
+   Member stories slider styles (UPDATED)
+   ========================================================= */
 .experience-section {
   padding: 4rem 0;
   background: var(--light);
@@ -1399,6 +1401,88 @@ body.hero-ready .hero-overlay {
   line-height: 1.6;
   color: #4a5f82;
 }
+
+/* VIEWPORT reserves space for arrows so they don't overlap text */
+.experience-viewport {
+  position: relative;
+  padding: 0 90px; /* arrow space left/right */
+}
+
+/* arrows positioned inside reserved side space */
+.slider-arrow {
+  position: absolute;
+  top: 55%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  line-height: 1;
+  z-index: 5;
+}
+
+.slider-arrow.prev {
+  left: 10px;
+}
+
+.slider-arrow.next {
+  right: 10px;
+}
+
+/* Mobile: reduce padding + button size */
+/* =========================
+   Member Stories: align text with the H2 (left edge)
+   ========================= */
+
+/* Make the slider content start at the same left edge as the section heading */
+.experience-viewport {
+  max-width: 980px;
+  margin: 0;            /* was auto; this is why it was centered */
+  padding: 0 72px;      /* still leaves room for arrows */
+}
+
+/* Ensure heading + paragraph align left */
+.experience-slider .slide h3,
+.experience-slider .slide p {
+  text-align: left;
+}
+
+/* If your H3 was looking centered before */
+.experience-slider .slide h3 {
+  margin-left: 0;
+}
+
+/* =========================
+   Reduce arrow buttons
+   ========================= */
+.slider-arrow {
+  width: 44px;
+  height: 44px;
+  font-size: 26px;
+}
+
+/* Keep them closer to the edges */
+.slider-arrow.prev { left: 6px; }
+.slider-arrow.next { right: 6px; }
+
+/* Mobile: even smaller */
+@media (max-width: 768px) {
+  .experience-viewport {
+    padding: 0 52px;
+  }
+
+  .slider-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+}
+
 
 .slider-dots {
   display: flex;
@@ -1513,8 +1597,6 @@ body.hero-ready .hero-overlay {
   display: flex;
   pointer-events: auto; /* IMPORTANT */
 }
-
-
 
 .give-modal__card {
   width: min(820px, 100%);
@@ -1695,6 +1777,7 @@ body.give-page .nav-link[href="give.html"]::after {
 
 /* FIX: modal must be above fixed header so the X is clickable */
 .give-modal { z-index: 30000; }
+
 /* =========================================================
    MOBILE NAV — FORCE VISIBILITY + ABOVE EVERYTHING
    ========================================================= */

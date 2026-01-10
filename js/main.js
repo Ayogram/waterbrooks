@@ -300,5 +300,83 @@ document.addEventListener("DOMContentLoaded", () => {
     btnId: "celebrationSubmitBtn",
     successMessage: "Thank you. Your celebration request has been received.",
   });
+// =========================
+// MEMBER STORIES SLIDER (auto + arrows + dots)
+// =========================
+(() => {
+  const slider = document.getElementById("memberStoriesSlider");
+  if (!slider) return;
+
+  const slides = Array.from(slider.querySelectorAll(".experience-slides .slide"));
+  const dots = Array.from(slider.querySelectorAll(".slider-dots .dot"));
+  const nextBtn = slider.querySelector(".slider-arrow.next");
+  const prevBtn = slider.querySelector(".slider-arrow.prev");
+
+  if (!slides.length) return;
+
+  let current = slides.findIndex((s) => s.classList.contains("active"));
+  if (current < 0) current = 0;
+
+  const setActive = (index) => {
+    slides.forEach((s) => s.classList.remove("active"));
+    dots.forEach((d) => d.classList.remove("active"));
+
+    slides[index].classList.add("active");
+    if (dots[index]) dots[index].classList.add("active");
+    current = index;
+  };
+
+  const next = () => setActive((current + 1) % slides.length);
+  const prev = () => setActive((current - 1 + slides.length) % slides.length);
+
+  // Ensure correct initial state
+  setActive(current);
+
+  // Dots click
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      const i = Number(dot.dataset.slide);
+      if (Number.isFinite(i)) {
+        setActive(i);
+        restartAuto();
+      }
+    });
+  });
+
+  // Arrows click
+  nextBtn?.addEventListener("click", () => {
+    next();
+    restartAuto();
+  });
+
+  prevBtn?.addEventListener("click", () => {
+    prev();
+    restartAuto();
+  });
+
+  // Auto-advance
+  let timer = null;
+
+  const startAuto = () => {
+    stopAuto();
+    timer = setInterval(next, 6000);
+  };
+
+  const stopAuto = () => {
+    if (timer) clearInterval(timer);
+    timer = null;
+  };
+
+  const restartAuto = () => {
+    stopAuto();
+    startAuto();
+  };
+
+  startAuto();
+
+  // Pause on hover (desktop)
+  slider.addEventListener("mouseenter", stopAuto);
+  slider.addEventListener("mouseleave", startAuto);
+})();
 
 });

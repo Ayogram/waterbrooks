@@ -76,8 +76,8 @@
         <div class="pw-feature">
           <div class="pw-feature-left">
             <div class="pw-peek-empty">
-              <span class="pill small-pill">Pastor Words</span>
-              <h3 class="pw-empty-title">No write-ups yet</h3>
+              <span class="pill small-pill">Reflections</span>
+              <h3 class="pw-empty-title">No reflections yet</h3>
               <p class="pw-empty-text">Please check back soon.</p>
               <a class="pw-viewall btn btn-primary" href="pastor.html">View all</a>
             </div>
@@ -149,7 +149,7 @@
     if (!posts.length) {
       mount.innerHTML = `
         <div class="pw-list-empty">
-          <p>No write-ups yet. Please check back soon.</p>
+          <p>No Reflections yet. Please check back soon.</p>
         </div>
       `;
       return;

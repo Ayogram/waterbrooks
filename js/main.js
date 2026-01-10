@@ -61,13 +61,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =========================
   // Highlight active nav link
+  // (works for pastor.html as long as nav has href="pastor.html")
   // =========================
   const navLinks = document.querySelectorAll(".nav-link");
-  const currentPage = window.location.pathname.split("/").pop().split("?")[0].split("#")[0];
+  const currentPage = window.location.pathname
+    .split("/")
+    .pop()
+    .split("?")[0]
+    .split("#")[0];
 
   navLinks.forEach((link) => {
     const href = link.getAttribute("href");
-    if ((currentPage === "" && href === "index.html") || currentPage === href) {
+    if (!href) return;
+
+    const cleanHref = href.split("?")[0].split("#")[0];
+
+    if ((currentPage === "" && cleanHref === "index.html") || currentPage === cleanHref) {
       link.classList.add("active");
     }
   });
@@ -115,23 +124,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return ok;
   };
 
- const openModal = () => {
-  if (!modal) return;
-  modal.classList.add("is-open");
-  modal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-};
+  const openModal = () => {
+    if (!modal) return;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  };
 
-
- const closeModal = () => {
-  if (!modal) return;
-  modal.classList.remove("is-open");
-  modal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
-  if (statusText) statusText.textContent = "";
-};
-
-
+  const closeModal = () => {
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    if (statusText) statusText.textContent = "";
+  };
 
   if (giveBtn && modal) {
     const handleOpen = (e) => {
@@ -157,11 +163,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Esc closes
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && (modal.classList.contains("is-open") || window.location.hash === "#giveModal")) {
+      if (
+        e.key === "Escape" &&
+        (modal.classList.contains("is-open") || window.location.hash === "#giveModal")
+      ) {
         closeModal();
       }
     });
-
   }
 
   // Copy account number
@@ -223,15 +231,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 1200);
     });
   }
-    // =========================
+
+  // =========================
   // Generic IFRAME form helper (reliable on localhost + production)
   // =========================
-  const wireIframeForm = ({
-    formId,
-    btnId,
-    successMessage,
-    beforeSubmit, // optional callback
-  }) => {
+  const wireIframeForm = ({ formId, btnId, successMessage, beforeSubmit }) => {
     const form = document.getElementById(formId);
     if (!form) return;
 
@@ -300,83 +304,125 @@ document.addEventListener("DOMContentLoaded", () => {
     btnId: "celebrationSubmitBtn",
     successMessage: "Thank you. Your celebration request has been received.",
   });
-// =========================
-// MEMBER STORIES SLIDER (auto + arrows + dots)
-// =========================
-(() => {
-  const slider = document.getElementById("memberStoriesSlider");
-  if (!slider) return;
 
-  const slides = Array.from(slider.querySelectorAll(".experience-slides .slide"));
-  const dots = Array.from(slider.querySelectorAll(".slider-dots .dot"));
-  const nextBtn = slider.querySelector(".slider-arrow.next");
-  const prevBtn = slider.querySelector(".slider-arrow.prev");
+  // =========================
+  // MEMBER STORIES SLIDER (auto + arrows + dots)
+  // =========================
+  (() => {
+    const slider = document.getElementById("memberStoriesSlider");
+    if (!slider) return;
 
-  if (!slides.length) return;
+    const slides = Array.from(slider.querySelectorAll(".experience-slides .slide"));
+    const dots = Array.from(slider.querySelectorAll(".slider-dots .dot"));
+    const nextBtn = slider.querySelector(".slider-arrow.next");
+    const prevBtn = slider.querySelector(".slider-arrow.prev");
 
-  let current = slides.findIndex((s) => s.classList.contains("active"));
-  if (current < 0) current = 0;
+    if (!slides.length) return;
 
-  const setActive = (index) => {
-    slides.forEach((s) => s.classList.remove("active"));
-    dots.forEach((d) => d.classList.remove("active"));
+    let current = slides.findIndex((s) => s.classList.contains("active"));
+    if (current < 0) current = 0;
 
-    slides[index].classList.add("active");
-    if (dots[index]) dots[index].classList.add("active");
-    current = index;
-  };
+    const setActive = (index) => {
+      slides.forEach((s) => s.classList.remove("active"));
+      dots.forEach((d) => d.classList.remove("active"));
 
-  const next = () => setActive((current + 1) % slides.length);
-  const prev = () => setActive((current - 1 + slides.length) % slides.length);
+      slides[index].classList.add("active");
+      if (dots[index]) dots[index].classList.add("active");
+      current = index;
+    };
 
-  // Ensure correct initial state
-  setActive(current);
+    const next = () => setActive((current + 1) % slides.length);
+    const prev = () => setActive((current - 1 + slides.length) % slides.length);
 
-  // Dots click
-  dots.forEach((dot) => {
-    dot.addEventListener("click", () => {
-      const i = Number(dot.dataset.slide);
-      if (Number.isFinite(i)) {
-        setActive(i);
-        restartAuto();
-      }
+    // Ensure correct initial state
+    setActive(current);
+
+    // Dots click
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const i = Number(dot.dataset.slide);
+        if (Number.isFinite(i)) {
+          setActive(i);
+          restartAuto();
+        }
+      });
     });
-  });
 
-  // Arrows click
-  nextBtn?.addEventListener("click", () => {
-    next();
-    restartAuto();
-  });
+    // Arrows click
+    nextBtn?.addEventListener("click", () => {
+      next();
+      restartAuto();
+    });
 
-  prevBtn?.addEventListener("click", () => {
-    prev();
-    restartAuto();
-  });
+    prevBtn?.addEventListener("click", () => {
+      prev();
+      restartAuto();
+    });
 
-  // Auto-advance
-  let timer = null;
+    // Auto-advance
+    let timer = null;
 
-  const startAuto = () => {
-    stopAuto();
-    timer = setInterval(next, 6000);
-  };
+    const startAuto = () => {
+      stopAuto();
+      timer = setInterval(next, 6000);
+    };
 
-  const stopAuto = () => {
-    if (timer) clearInterval(timer);
-    timer = null;
-  };
+    const stopAuto = () => {
+      if (timer) clearInterval(timer);
+      timer = null;
+    };
 
-  const restartAuto = () => {
-    stopAuto();
+    const restartAuto = () => {
+      stopAuto();
+      startAuto();
+    };
+
     startAuto();
-  };
 
-  startAuto();
+    // Pause on hover (desktop)
+    slider.addEventListener("mouseenter", stopAuto);
+    slider.addEventListener("mouseleave", startAuto);
+  })();
 
-  // Pause on hover (desktop)
-  slider.addEventListener("mouseenter", stopAuto);
-  slider.addEventListener("mouseleave", startAuto);
+  // =========================
+  // PASTOR WORDS (optional enhancement)
+  // - Auto-open a post on pastor.html when coming from #hash
+  // - Works even if pastor-render.js is not present (no errors)
+  // =========================
+  (() => {
+    // Only run if we are on pastor.html and the list exists
+    const listMount = document.getElementById("pastorList");
+    if (!listMount) return;
+
+    // If the page loads with a hash, and the renderer has already created the post body,
+    // ensure it opens (fallback for older browsers / edge cases).
+    const hash = (window.location.hash || "").replace("#", "");
+    if (!hash) return;
+
+    // Defer a tick to let pastor-render.js paint first
+    setTimeout(() => {
+      const body = listMount.querySelector(`[data-body="${CSS.escape(hash)}"]`);
+      const btn = listMount.querySelector(`[data-toggle="${CSS.escape(hash)}"]`);
+      if (!body || !btn) return;
+
+      body.classList.add("is-open");
+      btn.textContent = "Close";
+
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  })();
+});
+// Auto-highlight active navigation link
+(function () {
+  const currentPage = location.pathname.split("/").pop() || "index.html";
+
+  document.querySelectorAll(".nav-link").forEach(link => {
+    const linkPage = link.getAttribute("href");
+
+    if (linkPage === currentPage) {
+      link.classList.add("active");
+    }
+  });
 })();
 
-});

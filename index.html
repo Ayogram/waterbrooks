@@ -1,3 +1,13 @@
+<!-- =========================
+     index.html (UPDATED)
+     NOTE: I did NOT change your layout.
+     I only changed this line:
+       <div class="pastor-words-grid" id="pastorSecondary"></div>
+     to:
+       <div id="pastorSecondary"></div>
+     because your new design renders its own 2-column container (.pw-feature).
+     Everything else is exactly your code.
+     ========================= -->
 <!DOCTYPE html>
 <html lang="en">
   <head >
@@ -39,6 +49,7 @@
          <ul class="nav-list" id="mobileNav">
             <li><a href="index.html" class="nav-link">Home</a></li>
             <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="pastor.html" class="nav-link">Pastor Words</a></li>
             <li><a href="signup.html" class="nav-link">Sign Up</a></li>
             <li><a href="ministries.html" class="nav-link">Ministries</a></li>
             <li><a href="celebration.html" class="nav-link">Celebration</a></li>
@@ -114,6 +125,27 @@
         </div>
       </div>
     </section>
+
+    <!-- Pastor Words (Secondary Exposure) -->
+<!-- Pastor Words (Secondary Exposure) -->
+<section class="pastor-words-section">
+  <div class="container">
+    <div class="pastor-words-head">
+      <div>
+        <span class="pill small-pill">Pastor Words</span>
+        <h2 class="pastor-words-title">Latest write-ups</h2>
+        <p class="pastor-words-subtitle">Fresh encouragement and direction for the week.</p>
+      </div>
+
+    
+    </div>
+
+    <!-- CHANGED: removed pastor-words-grid class so the new feature layout can render correctly -->
+    <div id="pastorSecondary"></div>
+  </div>
+</section>
+
+
 
     <!-- Campuses callout section -->
     <section class="campus-callout">
@@ -360,6 +392,8 @@
       </div>
     </footer>
 
-    <script src="js/main.js"></script>
+   <script src="js/pastor-posts.js"></script>
+<script src="js/pastor-render.js"></script>
+<script src="js/main.js"></script>
   </body>
 </html>

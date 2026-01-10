@@ -104,7 +104,7 @@
         return `
           <a class="pw-peek-item" href="pastor.html?open=${id}">
             <div class="pw-peek-meta">
-              <span class="pill small-pill">Pastor Words</span>
+              <span class="pill small-pill">Reflections</span>
               <span class="pw-peek-date">${dateLabel}</span>
             </div>
             <div class="pw-peek-title">${title}</div>

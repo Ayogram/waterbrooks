@@ -2158,3 +2158,57 @@ body.give-page .nav-link[href="give.html"]::after {
 .pw-home-actions {
   margin-top: 18px;
 }
+/* =========================
+   NAV WRAP FIX (ADD AT END OF style.css)
+   - Keeps desktop menu on one line
+   - Switches to hamburger earlier to avoid ugly wrapping
+   ========================= */
+
+.header .nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header .nav {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.header .nav-list {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: nowrap;      /* KEY: do not wrap */
+  white-space: nowrap;    /* KEY: keep items on one line */
+}
+
+.header .nav-list li,
+.header .nav-link {
+  white-space: nowrap;    /* KEY: "PASTOR WORDS" stays as one line */
+}
+
+/* Slightly tighter spacing on mid widths */
+@media (max-width: 1200px) {
+  .header .nav-list {
+    gap: 16px;
+  }
+  .header .nav-link {
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+}
+
+/* IMPORTANT:
+   Hide desktop nav sooner and rely on hamburger before wrapping starts */
+@media (max-width: 1024px) {
+  .header .nav {
+    display: none;
+  }
+  .header .hamburger {
+    display: inline-flex;
+  }
+}

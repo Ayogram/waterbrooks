@@ -2202,13 +2202,83 @@ body.give-page .nav-link[href="give.html"]::after {
   }
 }
 
-/* IMPORTANT:
-   Hide desktop nav sooner and rely on hamburger before wrapping starts */
+
+/* =========================
+   FIX: Hamburger not clickable (mobile)
+   ========================= */
+.header {
+  position: fixed;
+  z-index: 50000; /* higher than any section */
+}
+
+.hamburger {
+  position: relative;
+  z-index: 50001; /* above header children */
+  pointer-events: auto;
+}
+/* Prevent Pastor Words feature from blocking header clicks */
+.pw-feature,
+.pw-feature * {
+  pointer-events: auto;
+}
+
+.pw-feature {
+  position: relative;
+  z-index: 1;
+}
+/* =========================
+   FIX: Hamburger works up to tablets (<=1024px)
+   - Do NOT hide .nav (because the UL is inside it)
+   - Hide the desktop UL by default
+   - Show dropdown when .open is added by JS
+   ========================= */
 @media (max-width: 1024px) {
-  .header .nav {
-    display: none;
+  /* Show hamburger */
+  .hamburger {
+    display: flex !important;
+    position: relative;
+    z-index: 50001;
   }
-  .header .hamburger {
-    display: inline-flex;
+
+  /* IMPORTANT: keep nav visible (do NOT display:none) */
+  .nav {
+    display: block !important;
+    position: static !important;
+  }
+
+  /* Hide menu by default */
+  .nav-list {
+    display: none !important;
+  }
+
+  /* Show dropdown when JS adds .open */
+  .nav-list.open {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed;
+    top: var(--header-h-mobile, 72px);
+    left: 0;
+    right: 0;
+    width: 100vw;
+
+    background: var(--dark);
+    padding: 16px 0;
+    gap: 8px;
+    text-align: center;
+
+    z-index: 50000 !important;
+
+    max-height: calc(100vh - var(--header-h-mobile, 72px));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .nav-list.open .nav-link {
+    display: block;
+    padding: 12px 16px;
+    width: 100%;
   }
 }

@@ -237,6 +237,24 @@
     </div>
   </section>
 
+  <!-- Latest Media Section -->
+  <section class="latest-media-section" style="background:#0a0a0a; color:#fff; padding: 5rem 0;">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 3rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <span class="pill small-pill" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">Watch Now</span>
+          <h2 style="font-size: 2.2rem; margin-top: 1rem; margin-bottom: 0;">Experience God's Power <span class="text-highlight">Live</span></h2>
+        </div>
+        <a href="media.html" class="btn btn-primary" style="background: #fff; color: #0056b3; border:none; border-radius:8px; margin-bottom:6px;">View Media Gallery</a>
+      </div>
+      
+      <div id="homeMediaPreview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <!-- JS will populate top 3 latest media entries here -->
+        <div style="color:rgba(255,255,255,0.5);">Loading latest media...</div>
+      </div>
+    </div>
+  </section>
+
   <!-- Lead Pastor Section -->
   <section class="pastor-section">
     <div class="container pastor-container">
@@ -374,6 +392,7 @@
 
   <script src="js/pastor-posts.js"></script>
   <script src="js/pastor-render.js"></script>
+  <script src="js/home-media.js"></script>
   <script src="js/main.js"></script>
 </body>
 

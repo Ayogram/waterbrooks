@@ -198,7 +198,7 @@ app.get('/api/media', asyncHandler(async (req, res) => {
 app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(async (req, res) => {
     await connectDB();
     if (!req.file && !req.body.youtubeUrl && !req.body.videoLink) {
-      return res.status(400).json({ error: 'Absolutely no file or video link dynamically provided.' });
+      return res.status(400).json({ error: 'No file or video link provided.' });
     }
     
     let urlToSave = '';

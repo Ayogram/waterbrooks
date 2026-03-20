@@ -67,9 +67,9 @@
                <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease; z-index:1;" onerror="this.src='images/logo.png'">
                <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
                <div class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:3; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); pointer-events:none;">
-                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon â†’</div>
+                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon →</div>
                </div>
-               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8;">â–¶</div>
+               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8;">▶</div>
              </div>
            `;
          } else if (parsed && parsed.platform === 'instagram') {

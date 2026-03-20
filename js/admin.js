@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!fileAttached && !ytUrl) {
           msgDiv.className = 'error-msg';
-          msgDiv.textContent = 'You must physically either select a small <4.5MB file or paste a YouTube Link!';
+          msgDiv.textContent = 'Please select a file (under 4.5MB) or paste a video link.';
           submitBtn.disabled = false;
           submitBtn.textContent = 'Upload Media';
           return;
@@ -177,19 +177,19 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Upload Media';
         if (data.success) {
           msgDiv.className = 'success-msg';
-          msgDiv.textContent = 'Media successfully magically uploaded into the secure Mongo CDN!';
+          msgDiv.textContent = 'Media uploaded successfully.';
           mediaForm.reset();
           youtubeGrp.classList.add('hidden');
           ytPreview.innerHTML = '';
         } else {
           msgDiv.className = 'error-msg';
-          msgDiv.textContent = data.error || 'Upload completely crashed internally.';
+          msgDiv.textContent = data.error || 'Upload failed. Please try again.';
         }
       } catch (err) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Upload Media';
         msgDiv.className = 'error-msg';
-        msgDiv.textContent = `Server Connection Failure: ${err.message || ''}`;
+        msgDiv.textContent = 'Connection error. Please try again.';
       }
     });
   }
@@ -219,9 +219,9 @@ async function login() {
   }
   
   btn.disabled = true;
-  btn.textContent = 'Authenticating...';
+  btn.textContent = 'Logging in...';
   msg.className = '';
-  msg.textContent = 'Connecting to secure server... Please wait...';
+  msg.textContent = 'Connecting... Please wait.';
   
   try {
     const res = await fetch('/api/login', {
@@ -246,7 +246,7 @@ async function login() {
     btn.disabled = false;
     btn.textContent = 'Login';
     msg.className = 'error-msg';
-    msg.textContent = 'Cannot connect to server (Serverless Cold Start). Try again in 5 seconds.';
+    msg.textContent = 'Connection error. Please try again in a few seconds.';
   }
 }
 
@@ -367,7 +367,7 @@ async function loadManageContent() {
           <div style="display:flex; align-items:flex-start; gap: 15px; flex: 1;">
             ${
               m.type === 'link' || m.type === 'youtube'
-              ? `<div style="width: 80px; height: 80px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#ff0000; font-size:32px;"><b style="font-family:sans-serif;font-size:24px;">â–¶</b></div>`
+              ? `<div style="width: 80px; height: 80px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#ff0000; font-size:32px;"><b style="font-family:sans-serif;font-size:24px;">▶</b></div>`
               : `<img src="/${m.url}" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='images/logo.png'">`
             }
             <div>

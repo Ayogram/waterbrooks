@@ -1817,6 +1817,53 @@ body.give-page .nav-link[href="give.html"]::after {
 }
 
 /* =========================================================
+   LATEST MEDIA SLIDER (HOME PAGE)
+   ========================================================= */
+
+.media-slider-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.media-slider-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.media-slider-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.media-slider-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+/* Responsive slider item widths */
+@media (max-width: 1024px) {
+  .media-slider-item {
+    flex: 0 0 320px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .media-slider-item {
+    flex: 0 0 280px !important;
+  }
+  .media-slider-container {
+    gap: 1.2rem !important;
+  }
+}
+
+.yt-watch-btn:hover {
+  background: var(--primary) !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}
+
+.media-slider-item:hover {
+  transform: translateY(-5px);
+}
+/* =========================================================
    PASTOR WORDS – UPDATED + FIXED
    - This block MUST be OUTSIDE any @media {}
    - Keep at the VERY END of style.css

@@ -83,6 +83,19 @@ async function checkAuth() {
 async function login() {
   const pwd = document.getElementById('adminPassword').value;
   const msg = document.getElementById('loginMessage');
+  const btn = document.querySelector('#loginSection button');
+  
+  if (!pwd) {
+      msg.className = 'error-msg';
+      msg.textContent = 'Please enter a password.';
+      return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Authenticating...';
+  msg.className = '';
+  msg.textContent = 'Connecting to secure server... Please wait...';
+  
   try {
     const res = await fetch('/api/login', {
       method: 'POST',
@@ -90,18 +103,26 @@ async function login() {
       body: JSON.stringify({ password: pwd })
     });
     const data = await res.json();
+    
+    btn.disabled = false;
+    btn.textContent = 'Login';
+    
     if (data.success) {
       showDashboard();
       msg.textContent = '';
+      document.getElementById('adminPassword').value = '';
     } else {
       msg.className = 'error-msg';
-      msg.textContent = 'Invalid password';
+      msg.textContent = data.error || 'Invalid password';
     }
   } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Login';
     msg.className = 'error-msg';
-    msg.textContent = 'Cannot connect to server. Is Node.js running?';
+    msg.textContent = 'Cannot connect to server (Serverless Cold Start). Try again in 5 seconds.';
   }
 }
+
 
 async function logout() {
   try {

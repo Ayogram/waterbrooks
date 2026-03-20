@@ -59,13 +59,12 @@
              <div class="yt-preview-wrapper" 
                   style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden; background:#000; cursor:pointer;"
                   onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${parsed.embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media\\' style=\\'position:absolute; top:0; left:0; width:100%; height:100%;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-overlay-hint').style.display='flex';"
-                  onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-overlay-hint').style.display='none';"
-                  onclick="window.open('https://www.youtube.com/watch?v=${parsed.id}', '_blank')">
+                  onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-overlay-hint').style.display='none';">
                <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease; z-index:1;" onerror="this.src='images/logo.png'">
                <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
-               <div class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:3; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); pointer-events:none;">
+               <a href="https://www.youtube.com/watch?v=${parsed.id}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); text-decoration:none; cursor:pointer;">
                  <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.5); color:#fff; padding:10px 20px; border-radius:30px; font-weight:600; font-size:1em; box-shadow:0 4px 15px rgba(0,0,0,0.5); text-transform:uppercase; letter-spacing:1px; transform:translateY(20px);">Click to Watch →</div>
-               </div>
+               </a>
                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.9; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">▶</div>
              </div>
            `;

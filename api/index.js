@@ -12,6 +12,17 @@ const cloudinary = require('cloudinary').v2;
 
 const app = express();
 
+// Async Error Wrapper for Express 4 Serverless crash prevention
+const asyncHandler = fn => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error("Vercel Diagnostics Error:", err.message);
+    res.status(500).json({ error: 'Serverless Crash: ' + err.message, stack: err.stack });
+});
+
 // Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,55 +30,40 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Multer + Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'waterbrooks_media',
-    resource_type: 'auto',
-  },
+  params: { folder: 'waterbrooks_media', resource_type: 'auto' },
 });
 const upload = multer({ storage: storage });
 
 // Mongoose Schemas
 const postSchema = new mongoose.Schema({
-    id: String,
-    date: String,
-    title: String,
-    excerpt: String,
-    content: [String]
+    id: String, date: String, title: String, excerpt: String, content: [String]
 });
 const Post = mongoose.models.Post || mongoose.model('Post', postSchema);
 
 const mediaSchema = new mongoose.Schema({
-    id: String,
-    url: String, // from cloudinary
-    public_id: String, // for deletion
-    caption: String,
-    type: String, // 'video' | 'image'
-    date: String
+    id: String, url: String, public_id: String, caption: String, type: String, date: String
 });
 const Media = mongoose.models.Media || mongoose.model('Media', mediaSchema);
 
 const adminSchema = new mongoose.Schema({
     username: { type: String, default: 'admin' },
-    passwordHash: String,
-    resetToken: String,
-    resetTokenExpiry: Number
+    passwordHash: String, resetToken: String, resetTokenExpiry: Number
 });
 const Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchema);
 
-// MongoDB connection
+// Stronger DB Connection with diagnostics
 async function connectDB() {
     if (mongoose.connection.readyState >= 1) return;
+    if (!process.env.MONGODB_URI) throw new Error("CRITICAL FAILURE: MONGODB_URI environment variable is missing in Vercel!");
+    
     await mongoose.connect(process.env.MONGODB_URI);
     
-    // Ensure admin user exists with their actual password hash seamlessly migrated
     const admin = await Admin.findOne({ username: 'admin' });
     if (!admin) {
         await Admin.create({
             username: 'admin',
-            // Default generated from their exact latest db.json config
             passwordHash: '$2b$10$VzLKw0yY2yN46FpaxT/MBe1XGKbROy.GId9acfZIouO/F6R3m3fUC'
         });
     }
@@ -79,20 +75,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
     name: 'session',
     keys: ['waterbrooks-secret-key-123'],
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000
 }));
 
-// Authorization Middleware
 function requireAuth(req, res, next) {
-    if (req.session && req.session.isAdmin) {
-        next();
-    } else {
-        res.status(401).json({ error: 'Unauthorized' });
-    }
+    if (req.session && req.session.isAdmin) next();
+    else res.status(401).json({ error: 'Unauthorized' });
 }
 
-// Routes
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', asyncHandler(async (req, res) => {
     await connectDB();
     const { password } = req.body;
     const admin = await Admin.findOne({ username: 'admin' });
@@ -103,7 +94,7 @@ app.post('/api/login', async (req, res) => {
     } else {
         res.status(401).json({ error: 'Invalid password' });
     }
-});
+}));
 
 app.post('/api/logout', (req, res) => {
     req.session = null;
@@ -114,48 +105,34 @@ app.get('/api/check-auth', (req, res) => {
     res.json({ isAdmin: !!(req.session && req.session.isAdmin) });
 });
 
-app.post('/api/forgot-password', async (req, res) => {
+app.post('/api/forgot-password', asyncHandler(async (req, res) => {
     await connectDB();
     const { email } = req.body;
-    if (email !== 'ajumobiayomipo@gmail.com') {
-        return res.status(400).json({ error: 'Unrecognized admin email address.' });
-    }
+    if (email !== 'ajumobiayomipo@gmail.com') return res.status(400).json({ error: 'Unrecognized admin email address.' });
 
     const token = crypto.randomBytes(20).toString('hex');
     await Admin.updateOne({ username: 'admin' }, {
-        resetToken: token,
-        resetTokenExpiry: Date.now() + 3600000
+        resetToken: token, resetTokenExpiry: Date.now() + 3600000
     });
 
+    if (!process.env.EMAIL_APP_PASSWORD) throw new Error("CRITICAL FAILURE: EMAIL_APP_PASSWORD environment variable is missing in Vercel!");
+    
     const transporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: {
-            user: 'ajumobiayomipo@gmail.com',
-            pass: process.env.EMAIL_APP_PASSWORD || ''
-        }
+        auth: { user: 'ajumobiayomipo@gmail.com', pass: process.env.EMAIL_APP_PASSWORD }
     });
-
-    if (!process.env.EMAIL_APP_PASSWORD) {
-        return res.status(500).json({ error: 'Action Required: You must generate a Gmail App Password.' });
-    }
 
     const mailOptions = {
-        from: 'ajumobiayomipo@gmail.com',
-        to: 'ajumobiayomipo@gmail.com',
+        from: 'ajumobiayomipo@gmail.com', to: 'ajumobiayomipo@gmail.com',
         subject: 'Waterbrooks Admin Password Reset',
-        text: `You requested an admin password reset.\n\nClick this link to securely reset your password:\nhttps://${req.headers.host}/reset.html?token=${token}\n\nIf you did not request this, please ignore this email.`
+        text: `You requested a password reset.\n\nClick here:\nhttps://${req.headers.host}/reset.html?token=${token}`
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Failed to send email. Ensure your Gmail App Password in .env is correct.' });
-        }
-        res.json({ success: true, message: 'Password reset link sent to ajumobiayomipo@gmail.com!' });
-    });
-});
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true, message: 'Password reset link sent!' });
+}));
 
-app.post('/api/reset-password', async (req, res) => {
+app.post('/api/reset-password', asyncHandler(async (req, res) => {
     await connectDB();
     const { token, newPassword } = req.body;
     const admin = await Admin.findOne({ username: 'admin' });
@@ -164,28 +141,23 @@ app.post('/api/reset-password', async (req, res) => {
         return res.status(400).json({ error: 'Invalid or expired password reset link.' });
     }
 
-    if (!newPassword || newPassword.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-    }
+    if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password too short.' });
 
     admin.passwordHash = bcrypt.hashSync(newPassword, 10);
     admin.resetToken = null;
     admin.resetTokenExpiry = null;
     await admin.save();
+    res.json({ success: true, message: 'Password reset successfully.' });
+}));
 
-    res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
-});
-
-// POSTS API
-app.get('/api/posts', async (req, res) => {
+app.get('/api/posts', asyncHandler(async (req, res) => {
     await connectDB();
     const posts = await Post.find(); 
-    // Manual sorting by date conceptually mirrors traditional setup
     posts.sort((a,b) => new Date(b.date) - new Date(a.date));
     res.json(posts);
-});
+}));
 
-app.post('/api/posts', requireAuth, async (req, res) => {
+app.post('/api/posts', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
     const { title, date, excerpt, content } = req.body;
     const newPost = new Post({
@@ -194,83 +166,73 @@ app.post('/api/posts', requireAuth, async (req, res) => {
     });
     await newPost.save();
     res.json({ success: true, post: newPost });
-});
+}));
 
-app.put('/api/posts/:id', requireAuth, async (req, res) => {
+app.put('/api/posts/:id', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
     const post = await Post.findOne({ id: req.params.id });
     if (!post) return res.status(404).json({ error: 'Post not found.' });
     
-    const updated = req.body;
-    post.title = updated.title || post.title;
-    post.date = updated.date || post.date;
-    post.excerpt = updated.excerpt !== undefined ? updated.excerpt : post.excerpt;
-    post.content = updated.content !== undefined ? updated.content : post.content;
+    post.title = req.body.title || post.title;
+    post.date = req.body.date || post.date;
+    post.excerpt = req.body.excerpt !== undefined ? req.body.excerpt : post.excerpt;
+    post.content = req.body.content !== undefined ? req.body.content : post.content;
     
     await post.save();
     res.json({ success: true, post: post });
-});
+}));
 
-app.delete('/api/posts/:id', requireAuth, async (req, res) => {
+app.delete('/api/posts/:id', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
     await Post.deleteOne({ id: req.params.id });
-    res.json({ success: true, message: 'Post deleted.' });
-});
+    res.json({ success: true });
+}));
 
-// MEDIA API
-app.get('/api/media', async (req, res) => {
+app.get('/api/media', asyncHandler(async (req, res) => {
     await connectDB();
     const media = await Media.find();
     media.sort((a,b) => new Date(b.date) - new Date(a.date));
     res.json(media);
-});
+}));
 
-app.post('/api/media', requireAuth, upload.single('mediaFile'), async (req, res) => {
+app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(async (req, res) => {
     await connectDB();
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     
     const isVideo = req.file.mimetype.startsWith('video/');
     const newMedia = new Media({
-        id: Date.now().toString(),
-        url: req.file.path, // Cloudinary natively signed secure URL
-        public_id: req.file.filename,
-        caption: req.body.caption || '',
-        type: isVideo ? 'video' : 'image',
+        id: Date.now().toString(), url: req.file.path, public_id: req.file.filename,
+        caption: req.body.caption || '', type: isVideo ? 'video' : 'image',
         date: new Date().toISOString().split('T')[0]
     });
     await newMedia.save();
     res.json({ success: true, media: newMedia });
-});
+}));
 
-app.put('/api/media/:id', requireAuth, async (req, res) => {
+app.put('/api/media/:id', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
     const media = await Media.findOne({ id: req.params.id });
     if (!media) return res.status(404).json({ error: 'Media not found.' });
-    
     media.caption = req.body.caption !== undefined ? req.body.caption : media.caption;
     await media.save();
     res.json({ success: true, media: media });
-});
+}));
 
-app.delete('/api/media/:id', requireAuth, async (req, res) => {
+app.delete('/api/media/:id', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
     const media = await Media.findOne({ id: req.params.id });
     if (!media) return res.status(404).json({ error: 'Media not found.' });
 
     if (media.public_id) {
-        try {
-            await cloudinary.uploader.destroy(media.public_id, { resource_type: media.type === 'video' ? 'video' : 'image' });
-        } catch(e) {
-            console.error('Cloudinary delete error:', e);
-        }
+        try { await cloudinary.uploader.destroy(media.public_id, { resource_type: media.type === 'video' ? 'video' : 'image' }); } catch(e) {}
     }
     await Media.deleteOne({ id: req.params.id });
     res.json({ success: true });
-});
+}));
 
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Local Vercel-simulation server listening on port ${PORT}`));
-}
+// Fallback for uncaught wrapper errors
+app.use((err, req, res, next) => {
+    res.status(500).json({ error: err.message, stack: err.stack });
+});
 
 module.exports = app;

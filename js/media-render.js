@@ -37,7 +37,14 @@
 
     const html = mediaData.map(m => {
       let mediaElement = '';
-      if (m.type === 'video') {
+      if (m.type === 'youtube') {
+         const url = m.url || '';
+         let videoId = '';
+         const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+         if (match && match[1]) videoId = match[1];
+         
+         mediaElement = `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else if (m.type === 'video') {
         mediaElement = `<video controls src="${m.url}" style="width: 100%; border-radius: 8px;"></video>`;
       } else {
         mediaElement = `<img src="${m.url}" alt="${m.caption}" style="width: 100%; border-radius: 8px;" />`;

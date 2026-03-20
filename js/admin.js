@@ -321,7 +321,11 @@ async function loadManageContent() {
         return `
         <article class="pw-post" style="display:flex; justify-content:space-between; align-items:flex-start;">
           <div style="display:flex; align-items:flex-start; gap: 15px; flex: 1;">
-            <img src="/${m.url}" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='images/logo.png'">
+            ${
+              m.type === 'youtube' 
+              ? `<div style="width: 80px; height: 80px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#ff0000; font-size:32px;"><b style="font-family:sans-serif;font-size:24px;">â–¶</b></div>`
+              : `<img src="/${m.url}" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='images/logo.png'">`
+            }
             <div>
               <div class="pw-post-date" style="margin-bottom:4px;">${dateStr}</div>
               <strong style="color: var(--primary); font-size: 1.1rem; display:block; margin-bottom: 4px;">${m.type.toUpperCase()}</strong> 

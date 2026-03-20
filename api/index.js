@@ -153,13 +153,15 @@ app.post('/api/reset-password', asyncHandler(async (req, res) => {
 app.get('/api/posts', asyncHandler(async (req, res) => {
     await connectDB();
     const posts = await Post.find(); 
-    posts.sort((a,b) => new Date(b.date) - new Date(a.date));
+    posts.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
     res.json(posts);
 }));
 
 app.post('/api/posts', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
-    const { title, date, excerpt, content } = req.body;
+    const { title, excerpt, content } = req.body;
+    let { date } = req.body;
+    if (!date) date = new Date().toISOString().split('T')[0];
     const newPost = new Post({
         id: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
         title, date, excerpt, content
@@ -191,7 +193,7 @@ app.delete('/api/posts/:id', requireAuth, asyncHandler(async (req, res) => {
 app.get('/api/media', asyncHandler(async (req, res) => {
     await connectDB();
     const media = await Media.find();
-    media.sort((a,b) => new Date(b.date) - new Date(a.date));
+    media.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
     res.json(media);
 }));
 

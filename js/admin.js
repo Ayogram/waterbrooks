@@ -338,6 +338,7 @@ async function loadManageContent() {
   try {
     const res = await fetch('/api/posts');
     const posts = await res.json();
+    posts.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
     window.globalPostsData = posts;
     const postsDiv = document.getElementById('managePostsList');
     if (posts.length === 0) {
@@ -373,8 +374,10 @@ async function loadManageContent() {
 
   // Load media
   try {
-    const res = await fetch('/api/media');
-    const media = await res.json();
+    const resMedia = await fetch('/api/media');
+    const media = await resMedia.json();
+    media.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+    window.globalMediaData = media;
     const mediaDiv = document.getElementById('manageMediaList');
     if (media.length === 0) {
       mediaDiv.innerHTML = '<p>No media found.</p>';

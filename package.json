@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
     "cookie-session": "^2.1.1",
     "cors": "^2.8.5",

@@ -19,10 +19,19 @@
     });
   }
 
+  let cachedPosts = [];
+  async function fetchPosts() {
+    try {
+      const res = await fetch('/api/posts');
+      cachedPosts = await res.json();
+    } catch(err) {
+      console.warn('Failed to fetch posts from API, falling back', err);
+      cachedPosts = Array.isArray(window.PASTOR_POSTS) ? window.PASTOR_POSTS : [];
+    }
+  }
+
   function getPosts() {
-    const posts = Array.isArray(window.PASTOR_POSTS)
-      ? window.PASTOR_POSTS.slice()
-      : [];
+    const posts = cachedPosts.slice();
     posts.sort((a, b) => safeText(b.date).localeCompare(safeText(a.date)));
     return posts;
   }
@@ -245,7 +254,8 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", async function () {
+    await fetchPosts();
     renderSecondaryExposure();
     renderListPage();
   });

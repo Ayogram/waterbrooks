@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reset Password | Waterbrooks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
+  <style>
+    .reset-container {
+      max-width: 500px;
+      margin: 80px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Poppins', sans-serif;}
+    .success-msg { color: green; font-weight: 600; margin-top: 10px; }
+    .error-msg { color: #dc3545; font-weight: 600; margin-top: 10px; }
+  </style>
+</head>
+<body style="background: #f5f7fa;">
+
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo"><span class="logo-text">WATERBROOKS</span></a>
+    </div>
+  </header>
+
+  <div class="container reset-container">
+    <h2 style="margin-bottom: 20px;">Reset Admin Password</h2>
+    <div id="resetFormArea">
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="newPassword" placeholder="Enter new authentic password">
+      </div>
+      <button class="btn btn-primary" onclick="resetPassword()">Confirm New Password</button>
+    </div>
+    <div id="resetMessage"></div>
+    <div style="margin-top:20px;">
+        <a href="admin.html" style="color: var(--primary); font-size: 0.9em;">Back to Login</a>
+    </div>
+  </div>
+
+  <script>
+    async function resetPassword() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const newPassword = document.getElementById('newPassword').value;
+      const msg = document.getElementById('resetMessage');
+
+      if (!token) {
+          msg.className = 'error-msg';
+          msg.textContent = 'No reset token found in URL. Please use the exact link sent to your email.';
+          return;
+      }
+      if (!newPassword || newPassword.length < 5) {
+          msg.className = 'error-msg';
+          msg.textContent = 'Password must be at least 5 characters.';
+          return;
+      }
+
+      msg.className = '';
+      msg.textContent = 'Resetting password...';
+
+      try {
+        const res = await fetch('/api/reset-password', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ token, newPassword })
+        });
+        const data = await res.json();
+        if (data.success) {
+          msg.className = 'success-msg';
+          msg.textContent = data.message;
+          document.getElementById('resetFormArea').style.display = 'none';
+        } else {
+          msg.className = 'error-msg';
+          msg.textContent = data.error || 'Failed to reset password.';
+        }
+      } catch (e) {
+        msg.className = 'error-msg';
+        msg.textContent = 'Cannot connect to server.';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard | Waterbrooks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
+  <style>
+    .admin-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: 'Poppins', sans-serif;
+    }
+    .btn { cursor: pointer; }
+    .hidden { display: none !important; }
+    .tab-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      color: var(--primary-color, #0056b3);
+      border-bottom: 2px solid var(--primary-color, #0056b3);
+    }
+    .success-msg { color: green; font-weight: 600; margin-top: 10px; }
+    .error-msg { color: red; font-weight: 600; margin-top: 10px; }
+    body {
+      background: linear-gradient(rgba(0, 40, 80, 0.75), rgba(0, 20, 40, 0.85)), url('images/hero.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">
+        <span class="logo-text">WATERBROOKS</span>
+        <img src="images/logo.png" alt="Waterbrooks Ministry International" />
+      </a>
+    </div>
+  </header>
+
+  <div class="container admin-container">
+    <h2 style="margin-bottom: 20px;">Admin Portal</h2>
+
+    <!-- Login Section -->
+    <div id="loginSection">
+      <h3>Please Authenticate</h3>
+      <div class="form-group">
+        <label>Admin Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter password">
+      </div>
+      <button class="btn btn-primary" onclick="login()">Login</button>
+      <div style="margin-top: 15px;">
+        <a href="#" onclick="forgotPassword()" style="font-size: 0.9em; color: var(--primary);">Forgot Password?</a>
+      </div>
+      <div id="loginMessage"></div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Dashboard</h3>
+        <button class="btn btn-primary" style="background: #dc3545;" onclick="logout()">Logout</button>
+      </div>
+      
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('reflectionsTab', this)">Add Reflection</button>
+        <button class="tab-btn" onclick="switchTab('mediaTab', this)">Add Media</button>
+        <button class="tab-btn" onclick="switchTab('manageTab', this); loadManageContent();">Manage Content</button>
+      </div>
+
+      <!-- Reflections Form -->
+      <div id="reflectionsTab">
+        <h4>Upload New Reflection (Pastor's Words)</h4>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="refTitle" placeholder="e.g. THE POWER OF FAITH">
+        </div>
+        <div class="form-group">
+          <label>Excerpt (Short summary)</label>
+          <input type="text" id="refExcerpt" placeholder="Brief summary of the message...">
+        </div>
+        <div class="form-group">
+          <label>Content (Full text)</label>
+          <textarea id="refContent" rows="10" placeholder="Paste the full reflection here... Separate paragraphs by new lines."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitReflection()">Publish Reflection</button>
+        <div id="refMessage"></div>
+      </div>
+
+      <!-- Media Form -->
+      <div id="mediaTab" class="hidden">
+        <h4>Upload Media (Picture / Video)</h4>
+        <form id="mediaForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Select File (Image or Video)</label>
+            <input type="file" name="mediaFile" id="mediaFile" required accept="image/*,video/*">
+          </div>
+          <div class="form-group">
+            <label>Caption</label>
+            <input type="text" name="caption" id="mediaCaption" placeholder="Write a caption...">
+          </div>
+          <button type="submit" class="btn btn-primary">Upload Media</button>
+        </form>
+        <div id="mediaMessage"></div>
+      </div>
+
+      <!-- Manage Content Form -->
+      <div id="manageTab" class="hidden">
+        <h4 style="margin-bottom: 10px;">Manage Reflections</h4>
+        <div id="managePostsList" style="margin-bottom: 20px; border: 1px solid #eee; padding: 10px; border-radius: 4px; max-height: 250px; overflow-y: auto;">
+          Loading reflections...
+        </div>
+
+        <h4 style="margin-bottom: 10px;">Manage Media</h4>
+        <div id="manageMediaList" style="border: 1px solid #eee; padding: 10px; border-radius: 4px; max-height: 250px; overflow-y: auto;">
+          Loading media...
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div id="editPostModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:25px; border-radius:8px; width:90%; max-width:650px; max-height:90vh; overflow-y:auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; color:#004080; border-bottom:1px solid #eee; padding-bottom:10px;">Edit Reflection</h3>
+      <input type="hidden" id="editPostId">
+      
+      <div class="form-group" style="margin-top:15px;">
+        <label>Title</label>
+        <input type="text" id="editTitle" class="form-control" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label>Date (YYYY-MM-DD)</label>
+        <input type="date" id="editDate" class="form-control" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label>Excerpt / Summary</label>
+        <textarea id="editExcerpt" class="form-control" rows="2" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; font-family:inherit;"></textarea>
+      </div>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label>Full Content (Paragraphs)</label>
+        <textarea id="editContent" class="form-control" rows="12" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; font-family:inherit; resize:vertical;"></textarea>
+        <small style="color:#777; display:block; margin-top:5px;">Separate paragraphs with a completely blank line.</small>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+        <button class="btn" style="background:#6c757d; color:#fff; padding:8px 16px; border-radius:4px; border:none; cursor:pointer;" onclick="closeEditModal()">Cancel</button>
+        <button class="btn btn-primary" style="background:#28a745; color:#fff; padding:8px 16px; border-radius:4px; border:none; cursor:pointer; font-weight:600;" onclick="saveEditPost()">Save & Publish Updates</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editPostModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:25px; border-radius:8px; width:90%; max-width:650px; max-height:90vh; overflow-y:auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; color:#004080; border-bottom:1px solid #eee; padding-bottom:10px;">Edit Reflection</h3>
+      <input type="hidden" id="editPostId">
+      
+      <div class="form-group" style="margin-top:15px;">
+        <label>Title</label>
+        <input type="text" id="editTitle" class="form-control" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label>Date (YYYY-MM-DD)</label>
+        <input type="date" id="editDate" class="form-control" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label>Excerpt / Summary</label>
+        <textarea id="editExcerpt" class="form-control" rows="2" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; font-family:inherit;"></textarea>
+      </div>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label>Full Content (Paragraphs)</label>
+        <textarea id="editContent" class="form-control" rows="12" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; font-family:inherit; resize:vertical;"></textarea>
+        <small style="color:#777; display:block; margin-top:5px;">Separate paragraphs with a completely blank line.</small>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+        <button class="btn" style="background:#6c757d; color:#fff; padding:8px 16px; border-radius:4px; border:none; cursor:pointer;" onclick="closeEditModal()">Cancel</button>
+        <button class="btn btn-primary" style="background:#28a745; color:#fff; padding:8px 16px; border-radius:4px; border:none; cursor:pointer; font-weight:600;" onclick="saveEditPost()">Save & Publish Updates</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
+

@@ -33,6 +33,7 @@ async function forgotPassword() {
 
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
+  if (document.getElementById('toggleFileBtn')) setMediaMode('file');
 
   const mediaFile = document.getElementById('mediaFile');
   const youtubeGrp = document.getElementById('youtubeInputGroup');
@@ -55,17 +56,35 @@ document.addEventListener('DOMContentLoaded', () => {
   if (refContentTextarea) refContentTextarea.addEventListener('keydown', handleShiftEnter);
   if (editContentTextarea) editContentTextarea.addEventListener('keydown', handleShiftEnter);
 
+  window.setMediaMode = function(mode) {
+    const fileGrp = document.getElementById('fileUploadGroup');
+    const youtubeGrp = document.getElementById('youtubeInputGroup');
+    const fileBtn = document.getElementById('toggleFileBtn');
+    const linkBtn = document.getElementById('toggleLinkBtn');
+    
+    if (mode === 'file') {
+      fileGrp.classList.remove('hidden');
+      youtubeGrp.classList.add('hidden');
+      fileBtn.style.background = 'var(--primary)';
+      fileBtn.style.color = '#fff';
+      linkBtn.style.background = '#e9ecef';
+      linkBtn.style.color = '#495057';
+    } else {
+      fileGrp.classList.add('hidden');
+      youtubeGrp.classList.remove('hidden');
+      linkBtn.style.background = 'var(--primary)';
+      linkBtn.style.color = '#fff';
+      fileBtn.style.background = '#e9ecef';
+      fileBtn.style.color = '#495057';
+    }
+  };
+
   if (mediaFile) {
     mediaFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file && file.size > 4.5 * 1024 * 1024) {
-        alert("This file is overwhelmingly massive! The Vercel free-tier completely physically physically rejects anything over 4.5 MB.\n\nTo confidently seamlessly host massive videos permanently for free forever, I have magically revealed a secret new YouTube Link Upload Box for you. Upload it to YouTube, and paste the exact link inside!");
+        alert("This file is too large (>4MB) for direct upload. \n\nWe recommend using the 'Add Link' option instead to host your video on YouTube for better quality!");
         mediaFile.value = '';
-        youtubeGrp.classList.remove('hidden');
-      } else if (file) {
-        youtubeGrp.classList.add('hidden');
-        ytInput.value = '';
-        ytPreview.innerHTML = '';
       }
     });
   }

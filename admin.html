@@ -121,25 +121,40 @@
 
       <!-- Media Form -->
       <div id="mediaTab" class="hidden">
-        <h4>Upload Media (Picture / Video)</h4>
+        <h4 style="margin-bottom: 15px; color: #004080;">Upload New Media</h4>
+        
+        <div style="background: #fdfdfe; border: 1px solid #e0e6ed; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+          <p style="margin: 0; color: #475467; font-size: 0.95em; line-height: 1.5;">
+            <strong>Pro Tip:</strong> To keep our servers running fast, we recommend uploading large videos (over 4MB) to 
+            <span style="color: #cc0000; font-weight: 600;">YouTube</span> first. This lets your visitors watch in high-definition without any slow loading!
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+          <button type="button" id="toggleFileBtn" class="btn btn-secondary active-mode" style="flex: 1; padding: 12px; font-weight: 600;" onclick="setMediaMode('file')">Add File</button>
+          <button type="button" id="toggleLinkBtn" class="btn btn-secondary" style="flex: 1; padding: 12px; font-weight: 600;" onclick="setMediaMode('link')">Add Link</button>
+        </div>
+
         <form id="mediaForm" enctype="multipart/form-data">
-          <div class="form-group">
-            <label>Select File (Image or Video - Max 4.5 MB)</label>
+          <!-- Local File Section -->
+          <div id="fileUploadGroup" class="form-group">
+            <label>Select File (Image or Video < 4MB)</label>
             <input type="file" name="mediaFile" id="mediaFile" accept="image/*,video/*">
-            <small style="color:#777; display:block; margin-top:5px;">To securely protect the servers, raw files absolutely must be smaller than 4.5 MB. For anything larger (like 200MB+ movies), please upload your file natively to YouTube and try selecting an oversized file here to reveal the secret YouTube Link bypass!</small>
           </div>
           
-          <div id="youtubeInputGroup" class="form-group hidden" style="background:#f8f9fc; padding:15px; border-left:4px solid #cc0000; border-radius:4px;">
-            <label style="color:#cc0000;">YouTube Link Bypass</label>
-            <input type="text" id="youtubeUrlInput" placeholder="Paste your clean YouTube Link here... (e.g., https://youtube.com/watch?v=...)">
-            <div id="youtubePreviewContainer" style="margin-top:15px; border-radius:5px; overflow:hidden;"></div>
+          <!-- Social Link Section -->
+          <div id="youtubeInputGroup" class="form-group hidden" style="background:#f8faff; padding:15px; border: 1px solid #ddecff; border-radius:8px;">
+            <label style="color: #004080;">Video Link (YouTube)</label>
+            <input type="text" id="youtubeUrlInput" placeholder="Paste link here... (e.g. https://www.youtube.com/watch?v=...)">
+            <div id="youtubePreviewContainer" style="margin-top:15px; border-radius:6px; overflow:hidden; background:#eee;"></div>
           </div>
           
           <div class="form-group">
-            <label>Caption</label>
-            <input type="text" name="caption" id="mediaCaption" placeholder="Write a gorgeous caption...">
+            <label>Caption / Title</label>
+            <input type="text" name="caption" id="mediaCaption" placeholder="What is this media about?">
           </div>
-          <button type="submit" class="btn btn-primary">Upload Media</button>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.1em; margin-top: 10px;">Save to Gallery</button>
         </form>
         <div id="mediaMessage"></div>
       </div>

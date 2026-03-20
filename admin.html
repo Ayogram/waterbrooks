@@ -124,12 +124,20 @@
         <h4>Upload Media (Picture / Video)</h4>
         <form id="mediaForm" enctype="multipart/form-data">
           <div class="form-group">
-            <label>Select File (Image or Video)</label>
-            <input type="file" name="mediaFile" id="mediaFile" required accept="image/*,video/*">
+            <label>Select File (Image or Video - Max 4.5 MB)</label>
+            <input type="file" name="mediaFile" id="mediaFile" accept="image/*,video/*">
+            <small style="color:#777; display:block; margin-top:5px;">To securely protect the servers, raw files absolutely must be smaller than 4.5 MB. For anything larger (like 200MB+ movies), please upload your file natively to YouTube and try selecting an oversized file here to reveal the secret YouTube Link bypass!</small>
           </div>
+          
+          <div id="youtubeInputGroup" class="form-group hidden" style="background:#f8f9fc; padding:15px; border-left:4px solid #cc0000; border-radius:4px;">
+            <label style="color:#cc0000;">YouTube Link Bypass</label>
+            <input type="text" id="youtubeUrlInput" placeholder="Paste your clean YouTube Link here... (e.g., https://youtube.com/watch?v=...)">
+            <div id="youtubePreviewContainer" style="margin-top:15px; border-radius:5px; overflow:hidden;"></div>
+          </div>
+          
           <div class="form-group">
             <label>Caption</label>
-            <input type="text" name="caption" id="mediaCaption" placeholder="Write a caption...">
+            <input type="text" name="caption" id="mediaCaption" placeholder="Write a gorgeous caption...">
           </div>
           <button type="submit" class="btn btn-primary">Upload Media</button>
         </form>

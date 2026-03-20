@@ -197,14 +197,34 @@ app.get('/api/media', asyncHandler(async (req, res) => {
 
 app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(async (req, res) => {
     await connectDB();
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!req.file && !req.body.youtubeUrl) {
+      return res.status(400).json({ error: 'Absolutely no file or YouTube link dynamically provided.' });
+    }
     
-    const isVideo = req.file.mimetype.startsWith('video/');
+    let urlToSave = '';
+    let publicIdToSave = '';
+    let mediaType = '';
+
+    if (req.body.youtubeUrl) {
+        // Automatically inject the pure string right into the URL database column seamlessly
+        urlToSave = req.body.youtubeUrl;
+        mediaType = 'youtube';
+        publicIdToSave = 'yt_embed_' + Date.now();
+    } else {
+        urlToSave = req.file.path;
+        publicIdToSave = req.file.filename;
+        mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
+    }
+
     const newMedia = new Media({
-        id: Date.now().toString(), url: req.file.path, public_id: req.file.filename,
-        caption: req.body.caption || '', type: isVideo ? 'video' : 'image',
+        id: Date.now().toString(),
+        url: urlToSave,
+        public_id: publicIdToSave,
+        caption: req.body.caption || '',
+        type: mediaType,
         date: new Date().toISOString().split('T')[0]
     });
+    
     await newMedia.save();
     res.json({ success: true, media: newMedia });
 }));

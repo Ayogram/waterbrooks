@@ -34,35 +34,118 @@ async function forgotPassword() {
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
 
+  const mediaFile = document.getElementById('mediaFile');
+  const youtubeGrp = document.getElementById('youtubeInputGroup');
+  const ytInput = document.getElementById('youtubeUrlInput');
+  const ytPreview = document.getElementById('youtubePreviewContainer');
+  const refContentTextarea = document.getElementById('refContent');
+  const editContentTextarea = document.getElementById('editContent');
+
+  // Handle Shift+Enter elegantly inside Textareas
+  const handleShiftEnter = function (e) {
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      const val = this.value;
+      this.value = val.substring(0, start) + '\n\n' + val.substring(end);
+      this.selectionStart = this.selectionEnd = start + 2;
+    }
+  };
+  if (refContentTextarea) refContentTextarea.addEventListener('keydown', handleShiftEnter);
+  if (editContentTextarea) editContentTextarea.addEventListener('keydown', handleShiftEnter);
+
+  if (mediaFile) {
+    mediaFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.size > 4.5 * 1024 * 1024) {
+        alert("This file is overwhelmingly massive! The Vercel free-tier completely physically physically rejects anything over 4.5 MB.\n\nTo confidently seamlessly host massive videos permanently for free forever, I have magically revealed a secret new YouTube Link Upload Box for you. Upload it to YouTube, and paste the exact link inside!");
+        mediaFile.value = '';
+        youtubeGrp.classList.remove('hidden');
+      } else if (file) {
+        youtubeGrp.classList.add('hidden');
+        ytInput.value = '';
+        ytPreview.innerHTML = '';
+      }
+    });
+  }
+
+  if (ytInput) {
+    ytInput.addEventListener('input', (e) => {
+      const url = e.target.value.trim();
+      let videoId = null;
+      // Extract the exact pure mathematically identifiable Video ID from various link structures natively
+      const standardMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+      if (standardMatch && standardMatch[1]) {
+        videoId = standardMatch[1];
+        ytPreview.innerHTML = `<iframe width="100%" height="250" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      } else {
+        ytPreview.innerHTML = '';
+      }
+    });
+  }
+
   const mediaForm = document.getElementById('mediaForm');
   if (mediaForm) {
     mediaForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const msgDiv = document.getElementById('mediaMessage');
+      const submitBtn = mediaForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading securely...';
       msgDiv.className = '';
-      msgDiv.textContent = 'Uploading...';
+      msgDiv.textContent = 'Generating...';
 
-      const formData = new FormData();
-      formData.append('mediaFile', document.getElementById('mediaFile').files[0]);
-      formData.append('caption', document.getElementById('mediaCaption').value);
+      const fileAttached = mediaFile.files[0];
+      const ytUrl = ytInput.value.trim();
+      const captionVal = document.getElementById('mediaCaption').value;
+
+      if (!fileAttached && !ytUrl) {
+          msgDiv.className = 'error-msg';
+          msgDiv.textContent = 'You must physically either select a small <4.5MB file or paste a YouTube Link!';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Upload Media';
+          return;
+      }
+
+      let fetchOptions = {};
+
+      if (ytUrl) {
+         fetchOptions = {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ youtubeUrl: ytUrl, caption: captionVal })
+         };
+      } else {
+         const formData = new FormData();
+         formData.append('mediaFile', fileAttached);
+         formData.append('caption', captionVal);
+         fetchOptions = {
+           method: 'POST',
+           body: formData
+         };
+      }
 
       try {
-        const res = await fetch('/api/media', {
-          method: 'POST',
-          body: formData
-        });
+        const res = await fetch('/api/media', fetchOptions);
         const data = await res.json();
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Upload Media';
         if (data.success) {
           msgDiv.className = 'success-msg';
-          msgDiv.textContent = 'Media uploaded successfully!';
+          msgDiv.textContent = 'Media successfully magically uploaded into the secure Mongo CDN!';
           mediaForm.reset();
+          youtubeGrp.classList.add('hidden');
+          ytPreview.innerHTML = '';
         } else {
           msgDiv.className = 'error-msg';
-          msgDiv.textContent = data.error || 'Upload failed.';
+          msgDiv.textContent = data.error || 'Upload completely crashed internally.';
         }
       } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Upload Media';
         msgDiv.className = 'error-msg';
-        msgDiv.textContent = 'Connection error.';
+        msgDiv.textContent = `Server Connection Failure: ${err.message || ''}`;
       }
     });
   }

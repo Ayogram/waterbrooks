@@ -1,4 +1,23 @@
 // Admin JS Logic
+let inactivityTimer;
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  // Auto-logout after 10 minutes of completely zero interaction
+  inactivityTimer = setTimeout(() => {
+    const dashboard = document.getElementById('dashboardSection');
+    if (dashboard && !dashboard.classList.contains('hidden')) {
+      alert("Session expired due to 10 minutes of inactivity. Logging out for security.");
+      logout();
+    }
+  }, 600000); 
+}
+
+// Listen for any type of interaction to keep the session alive
+['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetInactivityTimer, true);
+});
+
 async function forgotPassword() {
   const email = prompt("Please enter the admin email address:");
   if (!email) return;
@@ -263,6 +282,7 @@ async function logout() {
 function showDashboard() {
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('dashboardSection').classList.remove('hidden');
+  resetInactivityTimer(); // Start the 10-min countdown as soon as they get in
 }
 
 function switchTab(tabId, btn) {

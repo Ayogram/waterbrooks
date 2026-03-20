@@ -37,30 +37,48 @@
 
     const html = mediaData.map(m => {
       let mediaElement = '';
-      if (m.type === 'youtube') {
-         const url = m.url || '';
-         let videoId = '';
-         const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-         if (match && match[1]) videoId = match[1];
+      
+      // Re-initialize parser inside this scope for public rendering
+      const parseVideoLink = function(url) {
+        if (!url) return null;
+        let match;
+        if ((match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i))) {
+          return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
+        }
+        if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch'))) {
+          return { platform: 'facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` };
+        }
+        if ((match = url.match(/instagram\.com\/(?:p|reel|tv)\/([^\/?#&]+)/i))) {
+          return { platform: 'instagram', id: match[1], embedUrl: `https://www.instagram.com/p/${match[1]}/embed` };
+        }
+        return null;
+      };
+
+      if (m.type === 'link' || m.type === 'youtube') {
+         const parsed = parseVideoLink(m.url);
          
-         // Premium Hover Preview System
-         const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-         const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
-         
-         mediaElement = `
-           <div class="yt-preview-wrapper" 
-                style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden; background:#000; cursor:pointer;"
-                onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media\\' style=\\'position:absolute; top:0; left:0; width:100%; height:100%;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-overlay-hint').style.display='flex';"
-                onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-overlay-hint').style.display='none';"
-                onclick="window.open('https://www.youtube.com/watch?v=${videoId}', '_blank')">
-             <img class="yt-thumb" src="${thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease; z-index:1;" onerror="this.src='images/logo.png'">
-             <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
-             <div class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:3; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); pointer-events:none;">
-               <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon â†’</div>
+         if (parsed && parsed.platform === 'youtube') {
+           mediaElement = `
+             <div class="yt-preview-wrapper" 
+                  style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden; background:#000; cursor:pointer;"
+                  onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${parsed.embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media\\' style=\\'position:absolute; top:0; left:0; width:100%; height:100%;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-overlay-hint').style.display='flex';"
+                  onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-overlay-hint').style.display='none';"
+                  onclick="window.open('https://www.youtube.com/watch?v=${parsed.id}', '_blank')">
+               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease; z-index:1;" onerror="this.src='images/logo.png'">
+               <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
+               <div class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:3; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); pointer-events:none;">
+                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon â†’</div>
+               </div>
+               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8;">â–¶</div>
              </div>
-             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8;">â–¶</div>
-           </div>
-         `;
+           `;
+         } else if (parsed && parsed.platform === 'instagram') {
+           mediaElement = `<iframe style="width:100%; max-width:400px; height:450px; margin:0 auto; display:block;" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+         } else if (parsed && parsed.platform === 'facebook') {
+           mediaElement = `<iframe style="width:100%; height:280px; overflow:hidden;" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+         } else {
+           mediaElement = `<a href="${m.url}" target="_blank" style="display:inline-block; padding:10px 20px; background:#0056b3; color:#fff; border-radius:4px; text-decoration:none;">Watch Live Video Stream</a>`;
+         }
       } else if (m.type === 'video') {
         mediaElement = `<video controls src="${m.url}" style="width: 100%; border-radius: 8px;"></video>`;
       } else {

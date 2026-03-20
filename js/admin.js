@@ -96,17 +96,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  window.parseVideoLink = function(url) {
+    if (!url) return null;
+    let match;
+    // YouTube (watch, youtu.be, live, shorts, embed)
+    if ((match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i))) {
+      return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
+    }
+    // Facebook
+    if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch'))) {
+      return { platform: 'facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` };
+    }
+    // Instagram (p, reel, tv)
+    if ((match = url.match(/instagram\.com\/(?:p|reel|tv)\/([^\/?#&]+)/i))) {
+      return { platform: 'instagram', id: match[1], embedUrl: `https://www.instagram.com/p/${match[1]}/embed` };
+    }
+    return null;
+  };
+
   if (ytInput) {
     ytInput.addEventListener('input', (e) => {
       const url = e.target.value.trim();
-      let videoId = null;
-      // Extract the exact pure mathematically identifiable Video ID from various link structures natively
-      const standardMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-      if (standardMatch && standardMatch[1]) {
-        videoId = standardMatch[1];
-        ytPreview.innerHTML = `<iframe width="100%" height="250" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      const parsed = window.parseVideoLink(url);
+      if (parsed) {
+        let iframeStyle = "width:100%; height:250px;";
+        if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block;";
+        if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden;";
+        ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
       } else {
-        ytPreview.innerHTML = '';
+        ytPreview.innerHTML = url ? '<p style="padding:10px;color:#cc0000;font-size:0.9em;">Link format not fully recognized for live preview, but it will still save if valid.</p>' : '';
       }
     });
   }
@@ -140,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
          fetchOptions = {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ youtubeUrl: ytUrl, caption: captionVal })
+           body: JSON.stringify({ videoLink: ytUrl, caption: captionVal })
          };
       } else {
          const formData = new FormData();
@@ -348,7 +366,7 @@ async function loadManageContent() {
         <article class="pw-post" style="display:flex; justify-content:space-between; align-items:flex-start;">
           <div style="display:flex; align-items:flex-start; gap: 15px; flex: 1;">
             ${
-              m.type === 'youtube' 
+              m.type === 'link' || m.type === 'youtube'
               ? `<div style="width: 80px; height: 80px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#ff0000; font-size:32px;"><b style="font-family:sans-serif;font-size:24px;">â–¶</b></div>`
               : `<img src="/${m.url}" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='images/logo.png'">`
             }

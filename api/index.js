@@ -205,13 +205,12 @@ app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(asy
     let publicIdToSave = '';
     let mediaType = '';
 
-    if (req.body.youtubeUrl) {
-        // Automatically inject the pure string right into the URL database column seamlessly
-        urlToSave = req.body.youtubeUrl;
-        mediaType = 'youtube';
-        publicIdToSave = 'yt_embed_' + Date.now();
-    } else {
-        urlToSave = req.file.path;
+    // Check if it's a direct JSON link submission natively bypassing multer
+    if (req.body.videoLink || req.body.youtubeUrl) {
+        urlToSave = req.body.videoLink || req.body.youtubeUrl;
+        mediaType = 'link'; // Generic format covering Youtube, FB, Instagram
+        publicIdToSave = 'social_' + Date.now();
+    } else if (req.file) {      urlToSave = req.file.path;
         publicIdToSave = req.file.filename;
         mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
     }

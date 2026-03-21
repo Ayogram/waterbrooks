@@ -92,8 +92,8 @@
           };
         }
 
-        // Facebook
-        if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch'))) {
+        // Facebook (watch, videos, fb.watch, share/p, share/v)
+        if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/p/') || url.includes('/share/v/'))) {
           return { 
             platform: 'facebook', 
             embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` 

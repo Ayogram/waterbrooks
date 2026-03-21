@@ -122,13 +122,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i))) {
       return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
     }
-    // Facebook
-    if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch'))) {
+    // Facebook (watch, videos, fb.watch, share/p, share/v)
+    if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/p/') || url.includes('/share/v/'))) {
       return { platform: 'facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` };
     }
     // Instagram (p, reel, tv)
     if ((match = url.match(/instagram\.com\/(?:p|reel|tv)\/([^\/?#&]+)/i))) {
       return { platform: 'instagram', id: match[1], embedUrl: `https://www.instagram.com/p/${match[1]}/embed` };
+    }
+    // Generic Images
+    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) || url.includes('cloudinary.com')) {
+      return { platform: 'image', embedUrl: url };
+    }
+    // Generic Videos
+    if (url.match(/\.(mp4|webm|ogg)($|\?)/i)) {
+      return { platform: 'video', embedUrl: url };
     }
     return null;
   };
@@ -138,10 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = e.target.value.trim();
       const parsed = window.parseVideoLink(url);
       if (parsed) {
-        let iframeStyle = "width:100%; height:250px;";
-        if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block;";
-        if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden;";
-        ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+        if (parsed.platform === 'image') {
+          ytPreview.innerHTML = `<img src="${parsed.embedUrl}" style="width:100%; max-height:300px; object-fit:contain; border-radius:8px;">`;
+        } else if (parsed.platform === 'video') {
+          ytPreview.innerHTML = `<video src="${parsed.embedUrl}" controls style="width:100%; max-height:300px; border-radius:8px;"></video>`;
+        } else {
+          let iframeStyle = "width:100%; height:250px;";
+          if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block;";
+          if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden;";
+          ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+        }
       } else {
         ytPreview.innerHTML = url ? '<p style="padding:10px;color:#cc0000;font-size:0.9em;">Link format not fully recognized for live preview, but it will still save if valid.</p>' : '';
       }

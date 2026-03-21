@@ -92,8 +92,16 @@
           };
         }
 
-        // Facebook (watch, videos, fb.watch, share/p, share/v)
-        if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/p/') || url.includes('/share/v/'))) {
+        // Facebook Post
+        if (url.includes('facebook.com') && (url.includes('/posts/') || url.includes('/p/') || url.includes('/share/p/'))) {
+          return { 
+            platform: 'facebook-post', 
+            embedUrl: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500` 
+          };
+        }
+
+        // Facebook Video
+        if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/v/'))) {
           return { 
             platform: 'facebook', 
             embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` 
@@ -140,7 +148,7 @@
                <div class="yt-play-icon" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:54px; pointer-events:none; transition: opacity 0.3s ease; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">▶</div>
              </div>
            `;
-         } else if (parsed && (parsed.platform === 'facebook' || parsed.platform === 'instagram')) {
+         } else if (parsed && (parsed.platform === 'facebook' || parsed.platform === 'facebook-post' || parsed.platform === 'instagram')) {
             mediaElement = `
               <div class="yt-preview-wrapper" style="position:relative; width:100%; padding-bottom:70%; height:0; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
                    onmouseenter="this.querySelector('.yt-watch-btn').style.opacity='1';"

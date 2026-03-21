@@ -122,8 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i))) {
       return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
     }
-    // Facebook (watch, videos, fb.watch, share/p, share/v)
-    if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/p/') || url.includes('/share/v/'))) {
+    // Facebook Post
+    if (url.includes('facebook.com') && (url.includes('/posts/') || url.includes('/p/') || url.includes('/share/p/'))) {
+      return { platform: 'facebook-post', embedUrl: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500` };
+    }
+    // Facebook Video
+    if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/v/'))) {
       return { platform: 'facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` };
     }
     // Instagram (p, reel, tv)
@@ -154,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
           let iframeStyle = "width:100%; height:250px;";
           if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block;";
           if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden;";
+          if (parsed.platform === 'facebook-post') iframeStyle = "width:100%; height:350px; overflow:hidden;";
           ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
         }
       } else {

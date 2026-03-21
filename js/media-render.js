@@ -13,7 +13,11 @@
     try {
       const res = await fetch('/api/media');
       const data = await res.json();
-      return data.sort((a, b) => b.date.localeCompare(a.date)); // newest first
+      return data.sort((a, b) => {
+        const dateCompare = (b.date || "").localeCompare(a.date || "");
+        if (dateCompare !== 0) return dateCompare;
+        return (b.id || "").localeCompare(a.id || "");
+      }); 
     } catch(err) {
       console.warn('Failed to fetch media API', err);
       return [];
@@ -21,8 +25,6 @@
   }
 
   function renderMedia(mediaData) {
-    // We assume the mount point is the same container in media.html 
-    // replacing the pastorList id with mediaList id
     const mount = document.getElementById("mediaList");
     if (!mount) return;
 
@@ -38,59 +40,117 @@
     const html = mediaData.map(m => {
       let mediaElement = '';
       
-      // Re-initialize parser inside this scope for public rendering
-      const parseVideoLink = function(url) {
+      const parseMediaLink = function(url) {
         if (!url) return null;
         let match;
+        
+        // YouTube
         if ((match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i))) {
-          return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
+          const videoId = match[1];
+          return { 
+            platform: 'youtube', 
+            id: videoId, 
+            embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&loop=1&playlist=${videoId}`, 
+            thumbUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` 
+          };
         }
+
+        // Facebook
         if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch'))) {
-          return { platform: 'facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` };
+          return { 
+            platform: 'facebook', 
+            embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` 
+          };
         }
+
+        // Instagram
         if ((match = url.match(/instagram\.com\/(?:p|reel|tv)\/([^\/?#&]+)/i))) {
-          return { platform: 'instagram', id: match[1], embedUrl: `https://www.instagram.com/p/${match[1]}/embed` };
+          return { 
+            platform: 'instagram', 
+            id: match[1], 
+            embedUrl: `https://www.instagram.com/p/${match[1]}/embed` 
+          };
         }
+
+        // Generic Images (Cloudinary, JPG, PNG, etc.)
+        if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) || url.includes('cloudinary.com')) {
+          return { platform: 'image', embedUrl: url };
+        }
+
+        // Generic Videos (MP4, WebM, etc.)
+        if (url.match(/\.(mp4|webm|ogg)($|\?)/i)) {
+          return { platform: 'video', embedUrl: url };
+        }
+
         return null;
       };
 
       if (m.type === 'link' || m.type === 'youtube') {
-         const parsed = parseVideoLink(m.url);
+         const parsed = parseMediaLink(m.url);
          
          if (parsed && parsed.platform === 'youtube') {
            mediaElement = `
              <div class="yt-preview-wrapper" 
-                  style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:8px; overflow:hidden; background:#000; cursor:pointer;"
-                  onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${parsed.embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media\\' style=\\'position:absolute; top:0; left:0; width:100%; height:100%;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-overlay-hint').style.display='flex';"
+                  style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                  onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${parsed.embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media; picture-in-picture\\' allowfullscreen style=\\'position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-overlay-hint').style.display='flex';"
                   onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-overlay-hint').style.display='none';">
-               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease; z-index:1;" onerror="this.src='images/logo.png'">
+               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease; z-index:1;" onerror="this.src='images/logo.png'">
                <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
-               <a href="https://www.youtube.com/watch?v=${parsed.id}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
-                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon →</div>
+               <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
+                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon →</div>
                </a>
-               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8;">▶</div>
+               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8; text-shadow:0 4px 10px rgba(0,0,0,0.5);">▶</div>
              </div>
            `;
-         } else if (parsed && parsed.platform === 'instagram') {
-           mediaElement = `<iframe style="width:100%; max-width:400px; height:450px; margin:0 auto; display:block;" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
-         } else if (parsed && parsed.platform === 'facebook') {
-           mediaElement = `<iframe style="width:100%; height:280px; overflow:hidden;" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+         } else if (parsed && (parsed.platform === 'facebook' || parsed.platform === 'instagram')) {
+            mediaElement = `
+              <div class="yt-preview-wrapper" style="position:relative; width:100%; padding-bottom:70%; height:0; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onmouseenter="this.querySelector('.yt-overlay-hint').style.display='flex';"
+                   onmouseleave="this.querySelector('.yt-overlay-hint').style.display='none';">
+                <iframe src="${parsed.embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; overflow:hidden;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
+                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full →</div>
+                </a>
+              </div>
+            `;
+         } else if (parsed && parsed.platform === 'image') {
+            mediaElement = `
+              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:300px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onmouseenter="this.querySelector('.yt-overlay-hint').style.display='flex';"
+                   onmouseleave="this.querySelector('.yt-overlay-hint').style.display='none';">
+                <img src="${parsed.embedUrl}" style="width:100%; height:100%; object-fit:contain;">
+                <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
+                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">View Full →</div>
+                </a>
+              </div>
+            `;
+         } else if (parsed && parsed.platform === 'video') {
+            mediaElement = `
+              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:300px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onmouseenter="this.querySelector('video').play(); this.querySelector('.yt-overlay-hint').style.display='flex';"
+                   onmouseleave="this.querySelector('video').pause(); this.querySelector('.yt-overlay-hint').style.display='none';">
+                <video src="${parsed.embedUrl}" muted loop style="width:100%; height:100%; object-fit:contain;"></video>
+                <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
+                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full →</div>
+                </a>
+              </div>
+            `;
          } else {
-           mediaElement = `<a href="${m.url}" target="_blank" style="display:inline-block; padding:10px 20px; background:#0056b3; color:#fff; border-radius:4px; text-decoration:none;">Watch Live Video Stream</a>`;
+           mediaElement = `<a href="${m.url}" target="_blank" style="display:inline-block; padding:12px 24px; background:#0056b3; color:#fff; border-radius:30px; text-decoration:none; font-weight:600;">Watch Live Video Stream</a>`;
          }
       } else if (m.type === 'video') {
-        mediaElement = `<video controls src="${m.url}" style="width: 100%; border-radius: 8px;"></video>`;
+        mediaElement = `<video controls muted loop src="${m.url}" style="width: 100%; border-radius: 12px; background:#000;" onmouseenter="this.play()" onmouseleave="this.pause()"></video>`;
       } else {
-        mediaElement = `<img src="${m.url}" alt="${m.caption}" style="width: 100%; border-radius: 8px;" />`;
+        mediaElement = `<img src="${m.url}" alt="${m.caption}" style="width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" />`;
       }
 
       return `
-        <article class="pw-post" style="padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 24px; border-radius: 8px; background: #fff;">
+        <article class="pw-post" style="padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 24px; border-radius: 12px; background: #fff; border: 1px solid #edf2f7;">
           <div style="margin-bottom: 16px;">
             ${mediaElement}
           </div>
-          <div class="pw-post-date">${formatDate(m.date)}</div>
-          <p style="font-size: 1.1rem; font-weight: 500; margin-top: 8px;">${m.caption}</p>
+          <div class="pw-post-date" style="color:#718096; font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px;">${formatDate(m.date)}</div>
+          <p style="font-size: 1.15rem; font-weight: 600; margin-top: 10px; color:#1a202c; line-height:1.4;">${m.caption}</p>
         </article>
       `;
     }).join("");

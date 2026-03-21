@@ -1863,6 +1863,23 @@ body.give-page .nav-link[href="give.html"]::after {
 .media-slider-item:hover {
   transform: translateY(-5px);
 }
+
+/* Slider Navigation Arrows */
+.slider-arrow:hover {
+  background: var(--primary) !important;
+  color: #fff !important;
+  transform: translateY(-50%) scale(1.1) !important;
+}
+
+.slider-arrow:active {
+  transform: translateY(-50%) scale(0.95) !important;
+}
+
+@media (max-width: 768px) {
+  .slider-arrow {
+    display: none !important;
+  }
+}
 /* =========================================================
    PASTOR WORDS – UPDATED + FIXED
    - This block MUST be OUTSIDE any @media {}

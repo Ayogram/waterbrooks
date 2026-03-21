@@ -2351,4 +2351,13 @@ body.give-page .nav-link[href="give.html"]::after {
     width: 100%;
   }
 }
+
+/* Multi-line support for captions and reflections */
+.pw-peek-excerpt, 
+.pw-post-excerpt,
+.pw-post-title,
+.pastor-words-stack article p,
+#mediaList article p {
+  white-space: pre-wrap !important;
+}
  

@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.parseVideoLink = function(url) {
     if (!url) return null;
     let match;
-    // YouTube (watch, youtu.be, live, shorts, embed)
+    // YouTube
     if ((match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i))) {
       return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
     }
@@ -130,9 +130,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((url.includes('facebook.com') || url.includes('fb.watch')) && (url.includes('/videos/') || url.includes('/watch') || url.includes('fb.watch') || url.includes('/share/v/'))) {
       return { platform: 'facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=500` };
     }
-    // Instagram (p, reel, tv)
+    // Instagram
     if ((match = url.match(/instagram\.com\/(?:p|reel|tv)\/([^\/?#&]+)/i))) {
       return { platform: 'instagram', id: match[1], embedUrl: `https://www.instagram.com/p/${match[1]}/embed` };
+    }
+    // Spotify
+    if (url.includes('spotify.com')) {
+      const spotifyMatch = url.match(/spotify\.com\/(track|album|playlist|artist|show|episode)\/([a-zA-Z0-9]+)/);
+      if (spotifyMatch) {
+        return { platform: 'spotify', embedUrl: `https://open.spotify.com/embed/${spotifyMatch[1]}/${spotifyMatch[2]}` };
+      }
+    }
+    // SoundCloud
+    if (url.includes('soundcloud.com')) {
+      return { platform: 'soundcloud', embedUrl: `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true` };
+    }
+    // Twitter / X
+    if (url.includes('twitter.com') || url.includes('x.com')) {
+       return { platform: 'twitter', embedUrl: `https://twitframe.com/show?url=${encodeURIComponent(url)}` };
     }
     // Generic Images
     if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) || url.includes('cloudinary.com')) {
@@ -155,10 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (parsed.platform === 'video') {
           ytPreview.innerHTML = `<video src="${parsed.embedUrl}" controls style="width:100%; max-height:300px; border-radius:8px;"></video>`;
         } else {
-          let iframeStyle = "width:100%; height:250px;";
-          if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block;";
-          if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden;";
-          if (parsed.platform === 'facebook-post') iframeStyle = "width:100%; height:350px; overflow:hidden;";
+          let iframeStyle = "width:100%; height:250px; border-radius:12px;";
+          if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block; border-radius:12px;";
+          if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden; border-radius:12px;";
+          if (parsed.platform === 'facebook-post') iframeStyle = "width:100%; height:350px; overflow:hidden; border-radius:12px;";
+          if (parsed.platform === 'spotify') iframeStyle = "width:100%; height:160px; border-radius:12px;";
+          if (parsed.platform === 'soundcloud') iframeStyle = "width:100%; height:166px; border-radius:12px;";
+          if (parsed.platform === 'twitter') iframeStyle = "width:100%; height:400px; border-radius:12px; background:#fff;";
+          
           ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
         }
       } else {

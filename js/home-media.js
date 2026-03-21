@@ -117,6 +117,24 @@
           };
         }
 
+        // Spotify
+        if (url.includes('spotify.com')) {
+          const spotifyMatch = url.match(/spotify\.com\/(track|album|playlist|artist|show|episode)\/([a-zA-Z0-9]+)/);
+          if (spotifyMatch) {
+            return { platform: 'spotify', embedUrl: `https://open.spotify.com/embed/${spotifyMatch[1]}/${spotifyMatch[2]}` };
+          }
+        }
+
+        // SoundCloud
+        if (url.includes('soundcloud.com')) {
+          return { platform: 'soundcloud', embedUrl: `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true` };
+        }
+
+        // Twitter / X
+        if (url.includes('twitter.com') || url.includes('x.com')) {
+           return { platform: 'twitter', embedUrl: `https://twitframe.com/show?url=${encodeURIComponent(url)}` };
+        }
+
         // Generic Images (Cloudinary, JPG, PNG, etc.)
         if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) || url.includes('cloudinary.com')) {
           return { platform: 'image', embedUrl: url };
@@ -148,9 +166,16 @@
                <div class="yt-play-icon" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:54px; pointer-events:none; transition: opacity 0.3s ease; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">▶</div>
              </div>
            `;
-         } else if (parsed && (parsed.platform === 'facebook' || parsed.platform === 'facebook-post' || parsed.platform === 'instagram')) {
+         } else if (parsed && ['facebook', 'facebook-post', 'instagram', 'spotify', 'soundcloud', 'twitter'].includes(parsed.platform)) {
+           // Responsive height based on platform
+           let height = '200px';
+           if (parsed.platform === 'facebook-post') height = '350px';
+           if (parsed.platform === 'twitter') height = '400px';
+           if (parsed.platform === 'spotify') height = '160px';
+           if (parsed.platform === 'soundcloud') height = '166px';
+
             mediaElement = `
-              <div class="yt-preview-wrapper" style="position:relative; width:100%; padding-bottom:70%; height:0; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:${height}; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
                    onmouseenter="this.querySelector('.yt-watch-btn').style.opacity='1';"
                    onmouseleave="this.querySelector('.yt-watch-btn').style.opacity='0';">
                 <iframe src="${parsed.embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; overflow:hidden;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>

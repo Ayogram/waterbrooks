@@ -2352,7 +2352,7 @@ body.give-page .nav-link[href="give.html"]::after {
   }
 }
 
-/* Multi-line support for captions and reflections */
+/* Multi-line support for captions and reflections - Trigger Fix */
 .pw-peek-excerpt, 
 .pw-post-excerpt,
 .pw-post-title,

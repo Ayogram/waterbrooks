@@ -251,6 +251,20 @@ app.delete('/api/media/:id', requireAuth, asyncHandler(async (req, res) => {
     res.json({ success: true });
 }));
 
+// Route to resolve shortlinks like facebook.com/share/ into canonical links
+app.get('/api/resolve-link', asyncHandler(async (req, res) => {
+    const url = req.query.url;
+    if (!url) return res.json({ url: '' });
+    try {
+        // We use fetch with redirect: follow to get the final URL
+        const response = await fetch(url, { redirect: 'follow', method: 'HEAD' });
+        res.json({ url: response.url });
+    } catch(e) {
+        console.error('Resolution Error:', e);
+        res.json({ url });
+    }
+}));
+
 // Fallback for uncaught wrapper errors
 app.use((err, req, res, next) => {
     res.status(500).json({ error: err.message, stack: err.stack });

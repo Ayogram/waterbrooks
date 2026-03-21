@@ -161,28 +161,49 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   if (ytInput) {
+    let debounceTimer;
     ytInput.addEventListener('input', (e) => {
-      const url = e.target.value.trim();
-      const parsed = window.parseVideoLink(url);
-      if (parsed) {
-        if (parsed.platform === 'image') {
-          ytPreview.innerHTML = `<img src="${parsed.embedUrl}" style="width:100%; max-height:300px; object-fit:contain; border-radius:8px;">`;
-        } else if (parsed.platform === 'video') {
-          ytPreview.innerHTML = `<video src="${parsed.embedUrl}" controls style="width:100%; max-height:300px; border-radius:8px;"></video>`;
-        } else {
-          let iframeStyle = "width:100%; height:250px; border-radius:12px;";
-          if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block; border-radius:12px;";
-          if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden; border-radius:12px;";
-          if (parsed.platform === 'facebook-post') iframeStyle = "width:100%; height:350px; overflow:hidden; border-radius:12px;";
-          if (parsed.platform === 'spotify') iframeStyle = "width:100%; height:160px; border-radius:12px;";
-          if (parsed.platform === 'soundcloud') iframeStyle = "width:100%; height:166px; border-radius:12px;";
-          if (parsed.platform === 'twitter') iframeStyle = "width:100%; height:400px; border-radius:12px; background:#fff;";
-          
-          ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+      clearTimeout(debounceTimer);
+      
+      debounceTimer = setTimeout(async () => {
+        let url = e.target.value.trim();
+        
+        // Auto-resolve Facebook shortlinks to their canonical post URLs
+        if (url.includes('facebook.com/share/')) {
+          ytPreview.innerHTML = '<p style="padding:10px;color:#011e3f;font-size:0.9em;">Resolving Facebook link...</p>';
+          try {
+            const res = await fetch(`/api/resolve-link?url=${encodeURIComponent(url)}`);
+            const data = await res.json();
+            if (data && data.url && data.url !== url) {
+              url = data.url;
+              e.target.value = url; // Update input with canonical URL
+            }
+          } catch(err) {
+            console.error('Failed to resolve shortlink', err);
+          }
         }
-      } else {
-        ytPreview.innerHTML = url ? '<p style="padding:10px;color:#cc0000;font-size:0.9em;">Link format not fully recognized for live preview, but it will still save if valid.</p>' : '';
-      }
+        
+        const parsed = window.parseVideoLink(url);
+        if (parsed) {
+          if (parsed.platform === 'image') {
+            ytPreview.innerHTML = `<img src="${parsed.embedUrl}" style="width:100%; max-height:300px; object-fit:contain; border-radius:8px;">`;
+          } else if (parsed.platform === 'video') {
+            ytPreview.innerHTML = `<video src="${parsed.embedUrl}" controls style="width:100%; max-height:300px; border-radius:8px;"></video>`;
+          } else {
+            let iframeStyle = "width:100%; height:250px; border-radius:12px;";
+            if (parsed.platform === 'instagram') iframeStyle = "width:100%; max-width:400px; height:450px; margin:0 auto; display:block; border-radius:12px;";
+            if (parsed.platform === 'facebook') iframeStyle = "width:100%; height:280px; overflow:hidden; border-radius:12px;";
+            if (parsed.platform === 'facebook-post') iframeStyle = "width:100%; height:350px; overflow:hidden; border-radius:12px;";
+            if (parsed.platform === 'spotify') iframeStyle = "width:100%; height:160px; border-radius:12px;";
+            if (parsed.platform === 'soundcloud') iframeStyle = "width:100%; height:166px; border-radius:12px;";
+            if (parsed.platform === 'twitter') iframeStyle = "width:100%; height:400px; border-radius:12px; background:#fff;";
+            
+            ytPreview.innerHTML = `<iframe style="${iframeStyle}" src="${parsed.embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen scrolling="no"></iframe>`;
+          }
+        } else {
+          ytPreview.innerHTML = url ? '<p style="padding:10px;color:#cc0000;font-size:0.9em;">Link format not fully recognized for live preview, but it will still save if valid.</p>' : '';
+        }
+      }, 500); // 500ms debounce
     });
   }
 

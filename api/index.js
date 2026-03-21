@@ -108,7 +108,7 @@ app.get('/api/check-auth', (req, res) => {
 app.post('/api/forgot-password', asyncHandler(async (req, res) => {
     await connectDB();
     const { email } = req.body;
-    if (email !== 'ajumobiayomipo@gmail.com') return res.status(400).json({ error: 'Unrecognized admin email address.' });
+    if (email !== 'waterbrooksministryint@gmail.com') return res.status(400).json({ error: 'Unrecognized admin email address.' });
 
     const token = crypto.randomBytes(20).toString('hex');
     await Admin.updateOne({ username: 'admin' }, {
@@ -119,11 +119,11 @@ app.post('/api/forgot-password', asyncHandler(async (req, res) => {
     
     const transporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: { user: 'ajumobiayomipo@gmail.com', pass: process.env.EMAIL_APP_PASSWORD }
+        auth: { user: 'waterbrooksministryint@gmail.com', pass: process.env.EMAIL_APP_PASSWORD }
     });
 
     const mailOptions = {
-        from: 'ajumobiayomipo@gmail.com', to: 'ajumobiayomipo@gmail.com',
+        from: 'waterbrooksministryint@gmail.com', to: 'waterbrooksministryint@gmail.com',
         subject: 'Waterbrooks Admin Password Reset',
         text: `You requested a password reset.\n\nClick here:\nhttps://${req.headers.host}/reset.html?token=${token}`
     };

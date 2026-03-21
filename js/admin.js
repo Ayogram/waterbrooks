@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return { platform: 'youtube', id: match[1], embedUrl: `https://www.youtube.com/embed/${match[1]}`, thumbUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` };
     }
     // Facebook Post
-    if (url.includes('facebook.com') && (url.includes('/posts/') || url.includes('/p/') || url.includes('/share/p/'))) {
+    if (url.includes('facebook.com') && (url.includes('/posts/') || url.includes('/p/') || url.includes('/share/p/') || url.includes('/permalink/'))) {
       return { platform: 'facebook-post', embedUrl: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500` };
     }
     // Facebook Video

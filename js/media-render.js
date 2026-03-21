@@ -56,7 +56,7 @@
         }
 
         // Facebook Post
-        if (url.includes('facebook.com') && (url.includes('/posts/') || url.includes('/p/') || url.includes('/share/p/'))) {
+        if (url.includes('facebook.com') && (url.includes('/posts/') || url.includes('/p/') || url.includes('/share/p/') || url.includes('/permalink/'))) {
           return { 
             platform: 'facebook-post', 
             embedUrl: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500` 

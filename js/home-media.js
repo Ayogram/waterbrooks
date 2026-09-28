@@ -148,20 +148,24 @@
         return null;
       };
 
-      if (m.type === 'link' || m.type === 'youtube') {
+      const isVideo = m.type === 'link' || m.type === 'youtube' || m.type === 'video';
+      const videoPageUrl = `/media/video/${encodeURIComponent(m.id)}`;
+
+      if (isVideo) {
          const parsed = parseMediaLink(m.url);
          
          if (parsed && parsed.platform === 'youtube') {
            mediaElement = `
              <div class="yt-preview-wrapper" 
                   style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                  onclick="window.location.href='${videoPageUrl}';"
                   onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${parsed.embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media; picture-in-picture\\' allowfullscreen style=\\'position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-watch-btn').style.opacity='1'; this.querySelector('.yt-play-icon').style.opacity='0';"
                   onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-watch-btn').style.opacity='0'; this.querySelector('.yt-play-icon').style.opacity='1';">
-               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease; z-index:1;" onerror="this.src='images/logo.png'">
+               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease; z-index:1;" onerror="this.src='/images/logo.png'">
                <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
-               <a href="${m.url}" target="_blank" class="yt-watch-btn" 
+               <a href="${videoPageUrl}" class="yt-watch-btn" 
                   style="position:absolute; bottom:15px; right:15px; z-index:5; opacity:0; transition: all 0.3s ease; background:#fff; color:#011e3f; padding:8px 16px; border-radius:30px; font-weight:700; font-size:0.85rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; gap:6px;">
-                 WATCH FULL <span style="font-size:1.2em;">→</span>
+                 WATCH VIDEO <span style="font-size:1.2em;">→</span>
                </a>
                <div class="yt-play-icon" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:54px; pointer-events:none; transition: opacity 0.3s ease; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">▶</div>
              </div>
@@ -176,46 +180,48 @@
 
             mediaElement = `
               <div class="yt-preview-wrapper" style="position:relative; width:100%; height:${height}; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onclick="window.location.href='${videoPageUrl}';"
                    onmouseenter="this.querySelector('.yt-watch-btn').style.opacity='1';"
                    onmouseleave="this.querySelector('.yt-watch-btn').style.opacity='0';">
                 <iframe src="${parsed.embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; overflow:hidden;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-                <a href="${m.url}" target="_blank" class="yt-watch-btn" 
+                <a href="${videoPageUrl}" class="yt-watch-btn" 
                   style="position:absolute; bottom:15px; right:15px; z-index:5; opacity:0; transition: all 0.3s ease; background:#fff; color:#011e3f; padding:8px 16px; border-radius:30px; font-weight:700; font-size:0.85rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; gap:6px;">
-                 WATCH FULL <span style="font-size:1.2em;">→</span>
+                 WATCH VIDEO <span style="font-size:1.2em;">→</span>
                 </a>
               </div>
             `;
-         } else if (parsed && parsed.platform === 'image') {
+         } else if (m.type === 'video' || (m.url && m.url.match(/\.(mp4|webm|ogg)($|\?)/i))) {
+            const videoSrc = m.url.startsWith('http') || m.url.startsWith('/') ? m.url : '/' + m.url;
             mediaElement = `
               <div class="yt-preview-wrapper" style="position:relative; width:100%; height:200px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
-                   onmouseenter="this.querySelector('.yt-watch-btn').style.opacity='1';"
-                   onmouseleave="this.querySelector('.yt-watch-btn').style.opacity='0';">
-                <img src="${parsed.embedUrl}" style="width:100%; height:100%; object-fit:cover;">
-                <a href="${m.url}" target="_blank" class="yt-watch-btn" 
-                  style="position:absolute; bottom:15px; right:15px; z-index:5; opacity:0; transition: all 0.3s ease; background:#fff; color:#011e3f; padding:8px 16px; border-radius:30px; font-weight:700; font-size:0.85rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; gap:6px;">
-                 VIEW FULL <span style="font-size:1.2em;">→</span>
-                </a>
-              </div>
-            `;
-         } else if (parsed && parsed.platform === 'video') {
-            mediaElement = `
-              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:200px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onclick="window.location.href='${videoPageUrl}';"
                    onmouseenter="this.querySelector('video').play(); this.querySelector('.yt-watch-btn').style.opacity='1';"
                    onmouseleave="this.querySelector('video').pause(); this.querySelector('.yt-watch-btn').style.opacity='0';">
-                <video src="${parsed.embedUrl}" muted loop style="width:100%; height:100%; object-fit:cover;"></video>
-                <a href="${m.url}" target="_blank" class="yt-watch-btn" 
+                <video src="${videoSrc}" muted loop style="width:100%; height:100%; object-fit:cover;"></video>
+                <a href="${videoPageUrl}" class="yt-watch-btn" 
                   style="position:absolute; bottom:15px; right:15px; z-index:5; opacity:0; transition: all 0.3s ease; background:#fff; color:#011e3f; padding:8px 16px; border-radius:30px; font-weight:700; font-size:0.85rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; gap:6px;">
-                 WATCH FULL <span style="font-size:1.2em;">→</span>
+                 WATCH VIDEO <span style="font-size:1.2em;">→</span>
                 </a>
               </div>
             `;
          } else {
-           mediaElement = `<a href="${m.url}" target="_blank" style="display:flex; height:200px; align-items:center; justify-content:center; background:rgba(255,255,255,0.1); color:#fff; border-radius:12px; border:1px solid rgba(255,255,255,0.2); text-decoration:none; font-weight:600; text-align:center; padding:15px;">${m.caption || 'Watch Video'}</a>`;
+           mediaElement = `<a href="${videoPageUrl}" style="display:flex; height:200px; align-items:center; justify-content:center; background:rgba(255,255,255,0.1); color:#fff; border-radius:12px; border:1px solid rgba(255,255,255,0.2); text-decoration:none; font-weight:600; text-align:center; padding:15px;">${m.caption || 'Watch Video'}</a>`;
          }
-      } else if (m.type === 'video') {
-        mediaElement = `<video controls muted loop src="${m.url}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; background:#000;" onmouseenter="this.play()" onmouseleave="this.pause(); this.currentTime=0;"></video>`;
       } else {
-        mediaElement = `<img src="${m.url}" alt="${m.caption}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px;" />`;
+        // Image format
+        const imgSrc = m.url.startsWith('http') || m.url.startsWith('/') ? m.url : '/' + m.url;
+        mediaElement = `
+          <div class="yt-preview-wrapper" style="position:relative; width:100%; height:200px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+               onclick="window.open('${imgSrc}', '_blank');"
+               onmouseenter="this.querySelector('.yt-watch-btn').style.opacity='1';"
+               onmouseleave="this.querySelector('.yt-watch-btn').style.opacity='0';">
+            <img src="${imgSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/images/logo.png'">
+            <div class="yt-watch-btn" 
+              style="position:absolute; bottom:15px; right:15px; z-index:5; opacity:0; transition: all 0.3s ease; background:#fff; color:#011e3f; padding:8px 16px; border-radius:30px; font-weight:700; font-size:0.85rem; box-shadow:0 4px 15px rgba(0,0,0,0.4); display:flex; align-items:center; gap:6px;">
+             VIEW IMAGE <span style="font-size:1.2em;">↗</span>
+            </div>
+          </div>
+        `;
       }
 
       return `

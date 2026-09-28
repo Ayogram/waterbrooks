@@ -444,23 +444,41 @@ async function loadManageContent() {
       mediaDiv.innerHTML = `<div id="pastorList"><div class="pw-list-stack" style="display: grid; gap: 24px;">` + media.map(m => {
         const d = new Date(m.date + "T00:00:00");
         const dateStr = Number.isNaN(d.getTime()) ? m.date : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        const isVideo = m.type === 'link' || m.type === 'youtube' || m.type === 'video' || (m.url && m.url.includes('youtube'));
+        const ytId = (window.parseVideoLink && window.parseVideoLink(m.url))?.id || (m.url && m.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i)?.[1]);
+        
+        let thumbHtml = '';
+        if (ytId) {
+          thumbHtml = `<img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='/images/logo.png'">`;
+        } else if (isVideo) {
+          thumbHtml = `<div style="width: 80px; height: 80px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#ff0000; font-size:32px;"><b style="font-family:sans-serif;font-size:24px;">▶</b></div>`;
+        } else {
+          const imgSrc = m.url.startsWith('http') || m.url.startsWith('/') ? m.url : '/' + m.url;
+          thumbHtml = `<img src="${imgSrc}" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='/images/logo.png'">`;
+        }
+
+        const safeCaption = m.caption ? m.caption.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '<em>No caption provided</em>';
+        const typeLabel = (m.type || 'MEDIA').toUpperCase();
+
         return `
-        <article class="pw-post" style="display:flex; justify-content:space-between; align-items:flex-start;">
-          <div style="display:flex; align-items:flex-start; gap: 15px; flex: 1;">
-            ${
-              m.type === 'link' || m.type === 'youtube'
-              ? `<div style="width: 80px; height: 80px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#ff0000; font-size:32px;"><b style="font-family:sans-serif;font-size:24px;">▶</b></div>`
-              : `<img src="/${m.url}" style="width: 80px; height: 80px; object-fit: cover; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onerror="this.src='images/logo.png'">`
-            }
+        <article class="pw-post" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+          <div style="display:flex; align-items:flex-start; gap: 15px; flex: 1; min-width:240px;">
+            ${thumbHtml}
             <div>
               <div class="pw-post-date" style="margin-bottom:4px;">${dateStr}</div>
-              <strong style="color: var(--primary); font-size: 1.1rem; display:block; margin-bottom: 4px;">${m.type.toUpperCase()}</strong> 
-              <p class="pw-post-excerpt" style="margin:0;">${m.caption || '<em>No caption provided</em>'}</p>
+              <strong style="color: var(--primary); font-size: 1rem; display:block; margin-bottom: 4px;">${typeLabel}</strong> 
+              <p class="pw-post-excerpt" style="margin:0; white-space:pre-wrap;">${safeCaption}</p>
+              ${m.url ? `<small style="display:block; margin-top:4px; color:#6c757d; word-break:break-all; max-width:400px;">${m.url.substring(0, 60)}${m.url.length > 60 ? '...' : ''}</small>` : ''}
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap: 8px; align-items:flex-end; justify-content:center;">
-            <button class="pw-readmore" type="button" onclick="toggleMediaFullscreen(this)">View Image</button>
-            <button class="pw-readmore" type="button" style="background:#17a2b8;" onclick="editMediaCaption('${m.id}', '${m.caption ? m.caption.replace(/'/g, "\\'") : ''}')">Edit Caption</button>
+            ${
+              isVideo
+              ? `<button class="pw-readmore" type="button" style="background:#0056b3;" onclick="openMediaPreviewModal('${m.id}')">Preview Video</button>
+                 <a href="/media/video/${encodeURIComponent(m.id)}" target="_blank" class="pw-readmore" style="background:#495057; text-decoration:none; display:inline-block; text-align:center;">View on Site ↗</a>`
+              : `<button class="pw-readmore" type="button" style="background:#0056b3;" onclick="openMediaPreviewModal('${m.id}')">View Image</button>`
+            }
+            <button class="pw-readmore" type="button" style="background:#28a745;" onclick="openEditMediaModal('${m.id}')">Edit</button>
             <button class="pw-readmore" type="button" style="background:#dc3545;" onclick="deleteMedia('${m.id}')">Delete</button>
           </div>
         </article>
@@ -486,26 +504,138 @@ async function deletePost(id) {
   }
 }
 
-async function editMediaCaption(id, oldCaption) {
-  const newCaption = prompt("Enter new caption:", oldCaption || '');
-  if (newCaption === null || newCaption === oldCaption) return;
-  
+// Media Modal Handlers
+window.openEditMediaModal = function(id) {
+  const item = (window.globalMediaData || []).find(m => String(m.id) === String(id));
+  if (!item) return alert("Media item not found.");
+
+  document.getElementById('editMediaId').value = item.id;
+  document.getElementById('editMediaCaption').value = item.caption || '';
+  document.getElementById('editMediaUrl').value = item.url || '';
+  document.getElementById('editMediaDate').value = item.date || '';
+
+  window.updateEditMediaPreview(item.url || '');
+  document.getElementById('editMediaModal').style.display = 'flex';
+};
+
+window.closeEditMediaModal = function() {
+  document.getElementById('editMediaModal').style.display = 'none';
+};
+
+window.updateEditMediaPreview = function(url) {
+  const previewDiv = document.getElementById('editMediaLivePreview');
+  if (!previewDiv) return;
+
+  if (!url) {
+    previewDiv.innerHTML = '';
+    return;
+  }
+
+  const parsed = window.parseVideoLink ? window.parseVideoLink(url) : null;
+  if (parsed && parsed.embedUrl) {
+    previewDiv.innerHTML = `<iframe src="${parsed.embedUrl}" style="width:100%; height:200px; border:0; border-radius:6px;" allowfullscreen></iframe>`;
+  } else if (url.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i)) {
+    previewDiv.innerHTML = `<img src="${url}" style="max-height:160px; max-width:100%; object-fit:contain; border-radius:6px;">`;
+  } else {
+    previewDiv.innerHTML = '';
+  }
+};
+
+window.saveEditMedia = async function() {
+  const id = document.getElementById('editMediaId').value;
+  const caption = document.getElementById('editMediaCaption').value.trim();
+  const url = document.getElementById('editMediaUrl').value.trim();
+  const date = document.getElementById('editMediaDate').value;
+  const saveBtn = document.getElementById('saveEditMediaBtn');
+
+  if (!id) return alert("Invalid media ID.");
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
   try {
-    const res = await fetch('/api/media/' + id, {
+    const res = await fetch('/api/media/' + encodeURIComponent(id), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ caption: newCaption })
+      body: JSON.stringify({ caption, url, date })
     });
     const data = await res.json();
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Changes';
+
     if (data.success) {
-      loadManageContent(); // refresh immediately
+      window.closeEditMediaModal();
+      loadManageContent(); // Refresh UI immediately
+      alert('Media updated successfully!');
     } else {
-      alert(data.error || 'Failed to update caption.');
+      alert(data.error || 'Failed to update media.');
     }
-  } catch (e) {
-    alert('Connection error.');
+  } catch(err) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Changes';
+    alert('Connection error while updating media.');
   }
-}
+};
+
+// Media Lightbox Preview
+window.openMediaPreviewModal = function(id) {
+  const item = (window.globalMediaData || []).find(m => String(m.id) === String(id));
+  if (!item) return alert("Media item not found.");
+
+  const modal = document.getElementById('mediaPreviewModal');
+  const modalTitle = document.getElementById('previewModalTitle');
+  const imgEl = document.getElementById('previewModalImg');
+  const videoWrap = document.getElementById('previewModalVideoWrap');
+  const siteBtn = document.getElementById('previewModalSiteBtn');
+
+  modalTitle.textContent = item.caption || "Media Preview";
+  const isVideo = item.type === 'link' || item.type === 'youtube' || item.type === 'video' || (item.url && item.url.includes('youtube'));
+
+  if (isVideo) {
+    imgEl.style.display = 'none';
+    videoWrap.style.display = 'block';
+    siteBtn.style.display = 'inline-block';
+    siteBtn.href = `/media/video/${encodeURIComponent(item.id)}`;
+
+    const ytMatch = item.url && item.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    const ytId = ytMatch ? ytMatch[1] : null;
+
+    if (ytId) {
+      videoWrap.innerHTML = `
+        <div style="position:relative; width:100%; padding-bottom:56.25%; height:0; background:#000; border-radius:6px; overflow:hidden;">
+          <iframe src="https://www.youtube.com/embed/${ytId}?rel=0&autoplay=1" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      `;
+    } else if (item.url && item.url.match(/\.(mp4|webm|ogg)($|\?)/i)) {
+      const src = item.url.startsWith('http') || item.url.startsWith('/') ? item.url : '/' + item.url;
+      videoWrap.innerHTML = `<video controls autoplay style="width:100%; max-height:65vh; border-radius:6px; background:#000;"><source src="${src}"></video>`;
+    } else {
+      videoWrap.innerHTML = `
+        <div style="padding:40px; text-align:center; background:#f0f4f8; border-radius:6px;">
+          <p style="margin-bottom:12px; font-weight:600; color:#054478;">Media Link:</p>
+          <a href="${item.url}" target="_blank" style="word-break:break-all; color:#0056b3; font-weight:600;">${item.url}</a>
+        </div>
+      `;
+    }
+  } else {
+    // Image Preview
+    videoWrap.style.display = 'none';
+    videoWrap.innerHTML = '';
+    imgEl.style.display = 'block';
+    siteBtn.style.display = 'none';
+    const imgSrc = item.url.startsWith('http') || item.url.startsWith('/') ? item.url : '/' + item.url;
+    imgEl.src = imgSrc;
+  }
+
+  modal.style.display = 'flex';
+};
+
+window.closeMediaPreviewModal = function() {
+  const modal = document.getElementById('mediaPreviewModal');
+  const videoWrap = document.getElementById('previewModalVideoWrap');
+  if (videoWrap) videoWrap.innerHTML = '';
+  if (modal) modal.style.display = 'none';
+};
 
 async function deleteMedia(id) {
   if (!confirm("Are you sure you want to permanently delete this media file?")) return;
@@ -532,54 +662,6 @@ function toggleAdminPost(id, btn) {
     body.classList.add("is-open");
     if(btn) btn.textContent = "Close";
   }
-}
-
-function toggleMediaFullscreen(btn) {
-  const media = btn.closest('.pw-post').querySelector('img, video');
-  if (!media) return;
-  
-  if (document.getElementById('mediaFullscreenOverlay')) {
-     return;
-  }
-
-  const overlay = document.createElement('div');
-  overlay.id = 'mediaFullscreenOverlay';
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100vw';
-  overlay.style.height = '100vh';
-  overlay.style.background = 'rgba(0,0,0,0.9)';
-  overlay.style.zIndex = '99999';
-  overlay.style.display = 'flex';
-  overlay.style.justifyContent = 'center';
-  overlay.style.alignItems = 'center';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.innerHTML = '&times;';
-  closeBtn.style.position = 'absolute';
-  closeBtn.style.top = '25px';
-  closeBtn.style.right = '35px';
-  closeBtn.style.background = 'transparent';
-  closeBtn.style.color = '#fff';
-  closeBtn.style.border = 'none';
-  closeBtn.style.fontSize = '50px';
-  closeBtn.style.cursor = 'pointer';
-  closeBtn.style.fontWeight = 'bold';
-  closeBtn.onclick = () => document.body.removeChild(overlay);
-
-  const clone = media.cloneNode(true);
-  clone.style.maxWidth = '90vw';
-  clone.style.maxHeight = '90vh';
-  clone.style.width = 'auto';
-  clone.style.height = 'auto';
-  clone.style.objectFit = 'contain';
-  clone.style.boxShadow = '0 0 40px rgba(0,0,0,0.8)';
-  clone.style.borderRadius = '8px';
-
-  overlay.appendChild(closeBtn);
-  overlay.appendChild(clone);
-  document.body.appendChild(overlay);
 }
 
 function openEditModal(id) {

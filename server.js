@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const session = require('express-session');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
@@ -23,6 +23,16 @@ app.use(session({
     saveUninitialized: false,
     cookie: { secure: false } // Set secure:true if using HTTPS
 }));
+
+// Video permalinks - serves video.html
+app.get(['/media/video/:id', '/media/:id', '/video/:id'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'video.html'));
+});
+
+// Reflection permalinks - serves pastor.html
+app.get(['/reflections/:id', '/reflections', '/reflections.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'pastor.html'));
+});
 
 // Serve static files from the root directory (excluding 'data' folder for security)
 app.use(express.static(path.join(__dirname, '')));
@@ -214,23 +224,52 @@ app.put('/api/posts/:id', requireAuth, (req, res) => {
 // Media API
 app.get('/api/media', (req, res) => {
     const db = readDB();
-    res.json(db.media || []);
+    const media = (db.media || []).slice();
+    media.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+    res.json(media);
 });
 
-// Using upload.single('mediaFile') expects the form field name to be 'mediaFile'
-app.post('/api/media', requireAuth, upload.single('mediaFile'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+app.get('/api/media/:id', (req, res) => {
+    const db = readDB();
+    const mediaItem = (db.media || []).find(m => m.id === req.params.id);
+    if (!mediaItem) {
+        return res.status(404).json({ error: 'Media not found.' });
+    }
+    res.json(mediaItem);
+});
+
+// Middleware to conditionally invoke multer only for multipart/form-data
+const conditionalUpload = (req, res, next) => {
+    if (req.is('application/json')) {
+        return next();
+    }
+    upload.single('mediaFile')(req, res, next);
+};
+
+app.post('/api/media', requireAuth, conditionalUpload, (req, res) => {
+    const videoLink = req.body.videoLink || req.body.youtubeUrl;
+    if (!req.file && !videoLink) {
+        return res.status(400).json({ error: 'Please provide an uploaded file or video link.' });
     }
     
     const db = readDB();
-    const isVideo = req.file.mimetype.startsWith('video/');
+    let urlToSave = '';
+    let mediaType = '';
+
+    if (videoLink) {
+        urlToSave = videoLink.trim();
+        mediaType = 'link';
+    } else if (req.file) {
+        urlToSave = 'images/media/' + req.file.filename;
+        mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
+    }
+
     const newMedia = {
         id: Date.now().toString(),
-        url: 'images/media/' + req.file.filename,
+        url: urlToSave,
         caption: req.body.caption || '',
-        type: isVideo ? 'video' : 'image',
-        date: new Date().toISOString().split('T')[0]
+        type: mediaType,
+        date: req.body.date || new Date().toISOString().split('T')[0]
     };
     db.media.push(newMedia);
     writeDB(db);
@@ -245,7 +284,19 @@ app.put('/api/media/:id', requireAuth, (req, res) => {
         return res.status(404).json({ error: 'Media not found.' });
     }
     
-    db.media[index].caption = req.body.caption !== undefined ? req.body.caption : db.media[index].caption;
+    if (req.body.caption !== undefined) {
+        db.media[index].caption = req.body.caption;
+    }
+    if (req.body.url !== undefined && req.body.url.trim() !== '') {
+        db.media[index].url = req.body.url.trim();
+        if (/(youtube\.com|youtu\.be|facebook\.com|fb\.watch|instagram\.com|spotify\.com|soundcloud\.com)/i.test(db.media[index].url)) {
+            db.media[index].type = 'link';
+        }
+    }
+    if (req.body.date !== undefined && req.body.date.trim() !== '') {
+        db.media[index].date = req.body.date;
+    }
+    
     writeDB(db);
     res.json({ success: true, media: db.media[index] });
 });
@@ -257,32 +308,18 @@ app.delete('/api/media/:id', requireAuth, (req, res) => {
         return res.status(404).json({ error: 'Media not found.' });
     }
     
-    // Remove the physical file safely
+    // Remove the physical file safely if local
     const mediaItem = db.media[index];
-    const filePath = path.join(__dirname, mediaItem.url);
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+    if (mediaItem.url && !mediaItem.url.startsWith('http')) {
+        const filePath = path.join(__dirname, mediaItem.url);
+        if (fs.existsSync(filePath)) {
+            try { fs.unlinkSync(filePath); } catch (e) {}
+        }
     }
 
     db.media.splice(index, 1);
     writeDB(db);
     res.json({ success: true, message: 'Media deleted.' });
-});
-
-app.put('/api/media/:id', requireAuth, (req, res) => {
-    const db = readDB();
-    const index = db.media.findIndex(m => m.id === req.params.id);
-    if (index === -1) {
-        return res.status(404).json({ error: 'Media not found.' });
-    }
-    
-    if (req.body.caption !== undefined) {
-        db.media[index].caption = req.body.caption;
-        writeDB(db);
-        return res.json({ success: true, media: db.media[index] });
-    } else {
-        return res.status(400).json({ error: 'No caption provided.' });
-    }
 });
 
 app.listen(PORT, () => {

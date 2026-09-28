@@ -197,6 +197,13 @@ app.get('/api/media', asyncHandler(async (req, res) => {
     res.json(media);
 }));
 
+app.get('/api/media/:id', asyncHandler(async (req, res) => {
+    await connectDB();
+    const mediaItem = await Media.findOne({ id: req.params.id });
+    if (!mediaItem) return res.status(404).json({ error: 'Media not found.' });
+    res.json(mediaItem);
+}));
+
 app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(async (req, res) => {
     await connectDB();
     if (!req.file && !req.body.youtubeUrl && !req.body.videoLink) {
@@ -209,10 +216,11 @@ app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(asy
 
     // Check if it's a direct JSON link submission natively bypassing multer
     if (req.body.videoLink || req.body.youtubeUrl) {
-        urlToSave = req.body.videoLink || req.body.youtubeUrl;
+        urlToSave = (req.body.videoLink || req.body.youtubeUrl).trim();
         mediaType = 'link'; // Generic format covering Youtube, FB, Instagram
         publicIdToSave = 'social_' + Date.now();
-    } else if (req.file) {      urlToSave = req.file.path;
+    } else if (req.file) {
+        urlToSave = req.file.path;
         publicIdToSave = req.file.filename;
         mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
     }
@@ -223,7 +231,7 @@ app.post('/api/media', requireAuth, upload.single('mediaFile'), asyncHandler(asy
         public_id: publicIdToSave,
         caption: req.body.caption || '',
         type: mediaType,
-        date: new Date().toISOString().split('T')[0]
+        date: req.body.date || new Date().toISOString().split('T')[0]
     });
     
     await newMedia.save();
@@ -234,7 +242,16 @@ app.put('/api/media/:id', requireAuth, asyncHandler(async (req, res) => {
     await connectDB();
     const media = await Media.findOne({ id: req.params.id });
     if (!media) return res.status(404).json({ error: 'Media not found.' });
-    media.caption = req.body.caption !== undefined ? req.body.caption : media.caption;
+    
+    if (req.body.caption !== undefined) media.caption = req.body.caption;
+    if (req.body.url !== undefined && req.body.url.trim() !== '') {
+        media.url = req.body.url.trim();
+        if (/(youtube\.com|youtu\.be|facebook\.com|fb\.watch|instagram\.com|spotify\.com|soundcloud\.com)/i.test(media.url)) {
+            media.type = 'link';
+        }
+    }
+    if (req.body.date !== undefined && req.body.date.trim() !== '') media.date = req.body.date;
+    
     await media.save();
     res.json({ success: true, media: media });
 }));

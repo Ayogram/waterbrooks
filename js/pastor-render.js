@@ -50,25 +50,27 @@
   }
 
   function getOpenIdFromUrl() {
+    // 1. Check pathname: /reflections/:id
+    const pathMatch = window.location.pathname.match(/\/reflections\/([^/?#]+)/i);
+    if (pathMatch && pathMatch[1]) {
+      return decodeURIComponent(pathMatch[1]);
+    }
+
+    // 2. Check search params: ?open=ID or ?id=ID
     const params = new URLSearchParams(window.location.search);
-    const open = params.get("open");
+    const open = params.get("open") || params.get("id");
     if (open) return open;
 
-    const hash = (window.location.hash || "").replace("#", "");
-    if (hash) return hash;
+    // 3. Check hash: #reflection-ID or #ID
+    const rawHash = (window.location.hash || "").replace("#", "");
+    if (rawHash) {
+      if (rawHash.startsWith("reflection-")) {
+        return rawHash.replace("reflection-", "");
+      }
+      return rawHash;
+    }
 
     return "";
-  }
-
-  function clearHashIfPresent() {
-    if (!window.location.hash) return;
-    try {
-      history.replaceState(
-        null,
-        "",
-        window.location.pathname + window.location.search
-      );
-    } catch (_) {}
   }
 
   /* =========================
@@ -88,13 +90,13 @@
               <span class="pill small-pill">Reflections</span>
               <h3 class="pw-empty-title">No reflections yet</h3>
               <p class="pw-empty-text">Please check back soon.</p>
-              <a class="pw-viewall btn btn-primary" href="pastor.html">View all</a>
+              <a class="pw-viewall btn btn-primary" href="/pastor.html">View all</a>
             </div>
           </div>
 
           <div class="pw-feature-right">
             <div class="pw-pastor-photo">
-              <img src="images/pastor.jpg" alt="Apostle Niyi Aniya" />
+              <img src="/images/pastor.jpg" alt="Apostle Niyi Aniya" />
               <div class="pw-pastor-name">Apostle Niyi Aniya</div>
             </div>
           </div>
@@ -105,13 +107,13 @@
 
     const itemsHtml = posts
       .map((p) => {
-        const id = encodeURIComponent(p.id);
+        const permalink = `/reflections/${encodeURIComponent(p.id)}`;
         const title = safeText(p.title);
         const excerpt = safeText(p.excerpt);
         const dateLabel = formatDate(p.date);
 
         return `
-          <a class="pw-peek-item" href="pastor.html?open=${id}">
+          <a class="pw-peek-item" href="${permalink}">
             <div class="pw-peek-meta">
               <span class="pill small-pill">Reflections</span>
               <span class="pw-peek-date">${dateLabel}</span>
@@ -132,13 +134,13 @@
           </div>
 
           <div class="pw-home-actions">
-            <a class="pw-viewall btn btn-primary" href="pastor.html">View all</a>
+            <a class="pw-viewall btn btn-primary" href="/pastor.html">View all</a>
           </div>
         </div>
 
         <div class="pw-feature-right">
           <div class="pw-pastor-photo">
-            <img src="images/pastor.jpg" alt="Apostle Niyi Aniya" />
+            <img src="/images/pastor.jpg" alt="Apostle Niyi Aniya" />
             <div class="pw-pastor-name">Apostle Niyi Aniya</div>
           </div>
         </div>
@@ -177,13 +179,24 @@
               ? p.content
               : [safeText(p.content)];
 
+            let sectionCounter = 0;
             const bodyHtml = contentParas
               .filter(Boolean)
-              .map((para) => `<p>${safeText(para)}</p>`)
+              .map((para, idx) => {
+                const text = safeText(para);
+                // Check if this paragraph is a distinct numbered point or heading
+                const isSectionHeader = /^\s*(\d+[\.\)]|[•\-–—]\s+[A-Z]|[A-Z\s]{4,}:)/.test(text);
+                let pId = `reflection-${encodeURIComponent(id)}-p-${idx + 1}`;
+                if (isSectionHeader) {
+                  sectionCounter++;
+                  pId = `reflection-${encodeURIComponent(id)}-section-${sectionCounter}`;
+                }
+                return `<p id="${pId}">${text}</p>`;
+              })
               .join("");
 
             return `
-              <article class="pw-post" id="${encodeURIComponent(id)}" data-post="${id}">
+              <article class="pw-post" id="reflection-${encodeURIComponent(id)}" data-post="${id}">
                 <div class="pw-post-top" data-toggle="${id}">
                   <div class="pw-post-left">
                     <div class="pw-post-date">${dateLabel}</div>
@@ -191,9 +204,18 @@
                     <div class="pw-post-excerpt">${excerpt}</div>
                   </div>
 
-                  <button class="pw-readmore" type="button" data-toggle-btn="${id}">
-                    Read more
-                  </button>
+                  <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                    <button class="pw-copylink-btn" type="button" onclick="event.stopPropagation(); copyReflectionPermalink('${id}', this);" title="Copy link to this reflection">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                      </svg>
+                      <span>Copy Link</span>
+                    </button>
+                    <button class="pw-readmore" type="button" data-toggle-btn="${id}">
+                      Read more
+                    </button>
+                  </div>
                 </div>
 
                 <div class="pw-post-body" data-body="${id}">
@@ -237,7 +259,7 @@
       }
 
       const row = e.target.closest("[data-toggle]");
-      if (row && mount.contains(row) && !e.target.closest("a")) {
+      if (row && mount.contains(row) && !e.target.closest("button") && !e.target.closest("a")) {
         togglePost(row.getAttribute("data-toggle"));
       }
     });
@@ -248,10 +270,86 @@
       try {
         id = decodeURIComponent(openId);
       } catch (_) {}
-      openPost(id);
-      scrollToPostTop(mount.querySelector(`[data-post="${CSS.escape(id)}"]`));
-      clearHashIfPresent();
+
+      // Find post matching id or slug
+      const matchedPost = posts.find(p => p.id === id || encodeURIComponent(p.id) === id);
+      const actualId = matchedPost ? matchedPost.id : id;
+
+      openPost(actualId);
+      const card = mount.querySelector(`[data-post="${CSS.escape(actualId)}"]`);
+      if (card) {
+        scrollToPostTop(card);
+        card.classList.add('pw-post-highlighted');
+        setTimeout(() => {
+          card.classList.remove('pw-post-highlighted');
+        }, 3000);
+      }
+
+      if (matchedPost) {
+        document.title = `Waterbrooks Reflections | ${matchedPost.title}`;
+      }
     }
+  }
+
+  // Copy Reflection Permalink
+  window.copyReflectionPermalink = function(postId, btn) {
+    const permalink = `${window.location.origin}/reflections/${encodeURIComponent(postId)}`;
+    const span = btn ? btn.querySelector('span') : null;
+
+    function onCopied() {
+      if (btn) btn.classList.add('copied');
+      if (span) span.textContent = '✓ Copied!';
+      showReflectionToast('Reflection link copied to clipboard!');
+      setTimeout(() => {
+        if (btn) btn.classList.remove('copied');
+        if (span) span.textContent = 'Copy Link';
+      }, 2500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(permalink).then(onCopied).catch(() => fallbackCopy(permalink, onCopied));
+    } else {
+      fallbackCopy(permalink, onCopied);
+    }
+  };
+
+  function fallbackCopy(text, cb) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (cb) cb();
+    } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  function showReflectionToast(msg) {
+    let toast = document.getElementById('reflectionToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'reflectionToast';
+      toast.className = 'custom-toast';
+      toast.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>${msg}</span>
+      `;
+      document.body.appendChild(toast);
+    } else {
+      toast.querySelector('span').textContent = msg;
+    }
+
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
   }
 
   document.addEventListener("DOMContentLoaded", async function () {

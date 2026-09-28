@@ -1,6 +1,11 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" }
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/media/video/:id", "destination": "/video.html?id=:id" },
+    { "source": "/media/:id", "destination": "/video.html?id=:id" },
+    { "source": "/video/:id", "destination": "/video.html?id=:id" },
+    { "source": "/reflections/:id", "destination": "/pastor.html?open=:id" },
+    { "source": "/reflections", "destination": "/pastor.html" }
   ]
 }

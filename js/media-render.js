@@ -111,21 +111,25 @@
         return null;
       };
 
-      if (m.type === 'link' || m.type === 'youtube') {
+      const isVideoType = m.type === 'link' || m.type === 'youtube' || m.type === 'video';
+      const videoPageUrl = `/media/video/${encodeURIComponent(m.id)}`;
+
+      if (isVideoType) {
          const parsed = parseMediaLink(m.url);
          
          if (parsed && parsed.platform === 'youtube') {
            mediaElement = `
              <div class="yt-preview-wrapper" 
                   style="position:relative; width:100%; padding-bottom:56.25%; height:0; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                  onclick="window.location.href='${videoPageUrl}';"
                   onmouseenter="this.querySelector('.yt-iframe-placeholder').innerHTML = '<iframe width=\\'100%\\' height=\\'100%\\' src=\\'${parsed.embedUrl}\\' frameborder=\\'0\\' allow=\\'autoplay; encrypted-media; picture-in-picture\\' allowfullscreen style=\\'position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;\\'></iframe>'; this.querySelector('.yt-thumb').style.opacity='0'; this.querySelector('.yt-overlay-hint').style.display='flex';"
                   onmouseleave="this.querySelector('.yt-iframe-placeholder').innerHTML = ''; this.querySelector('.yt-thumb').style.opacity='1'; this.querySelector('.yt-overlay-hint').style.display='none';">
-               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease; z-index:1;" onerror="this.src='images/logo.png'">
+               <img class="yt-thumb" src="${parsed.thumbUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease; z-index:1;" onerror="this.src='/images/logo.png'">
                <div class="yt-iframe-placeholder" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
-               <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
-                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full Sermon →</div>
-               </a>
-               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.8; text-shadow:0 4px 10px rgba(0,0,0,0.5);">▶</div>
+               <div class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.25); text-decoration:none;">
+                 <span style="background:var(--primary, #306aa1); color:#fff; padding:9px 20px; border-radius:30px; font-weight:700; font-size:0.95em; box-shadow:0 4px 12px rgba(0,0,0,0.35);">Watch on Waterbrooks →</span>
+               </div>
+               <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.9; text-shadow:0 4px 12px rgba(0,0,0,0.6);">▶</div>
              </div>
            `;
          } else if (parsed && ['facebook', 'facebook-post', 'instagram', 'spotify', 'soundcloud', 'twitter'].includes(parsed.platform)) {
@@ -137,57 +141,131 @@
 
             mediaElement = `
               <div class="yt-preview-wrapper" style="position:relative; width:100%; height:${height}; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onclick="window.location.href='${videoPageUrl}';"
                    onmouseenter="this.querySelector('.yt-overlay-hint').style.display='flex';"
                    onmouseleave="this.querySelector('.yt-overlay-hint').style.display='none';">
                 <iframe src="${parsed.embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; overflow:hidden;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-                <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
-                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full →</div>
-                </a>
+                <div class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.25); text-decoration:none;">
+                 <span style="background:var(--primary, #306aa1); color:#fff; padding:9px 20px; border-radius:30px; font-weight:700; font-size:0.95em; box-shadow:0 4px 12px rgba(0,0,0,0.35);">Watch on Waterbrooks →</span>
+                </div>
               </div>
             `;
-         } else if (parsed && parsed.platform === 'image') {
+         } else if (m.type === 'video' || (m.url && m.url.match(/\.(mp4|webm|ogg)($|\?)/i))) {
+            const videoSrc = m.url.startsWith('http') || m.url.startsWith('/') ? m.url : '/' + m.url;
             mediaElement = `
-              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:300px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
-                   onmouseenter="this.querySelector('.yt-overlay-hint').style.display='flex';"
-                   onmouseleave="this.querySelector('.yt-overlay-hint').style.display='none';">
-                <img src="${parsed.embedUrl}" style="width:100%; height:100%; object-fit:contain;">
-                <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
-                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">View Full →</div>
-                </a>
-              </div>
-            `;
-         } else if (parsed && parsed.platform === 'video') {
-            mediaElement = `
-              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:300px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
-                   onmouseenter="this.querySelector('video').play(); this.querySelector('.yt-overlay-hint').style.display='flex';"
-                   onmouseleave="this.querySelector('video').pause(); this.querySelector('.yt-overlay-hint').style.display='none';">
-                <video src="${parsed.embedUrl}" muted loop style="width:100%; height:100%; object-fit:contain;"></video>
-                <a href="${m.url}" target="_blank" class="yt-overlay-hint" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; display:none; align-items:flex-end; justify-content:center; padding-bottom:20px; background:rgba(0,0,0,0.2); text-decoration:none; cursor:pointer;">
-                 <div style="background:rgba(0,86,179,0.9); color:#fff; padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.9em; box-shadow:0 4px 10px rgba(0,0,0,0.3);">Watch Full →</div>
-                </a>
+              <div class="yt-preview-wrapper" style="position:relative; width:100%; height:320px; border-radius:12px; overflow:hidden; background:#000; cursor:pointer;"
+                   onclick="window.location.href='${videoPageUrl}';">
+                <video src="${videoSrc}" muted loop style="width:100%; height:100%; object-fit:contain;"></video>
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:3; color:#fff; font-size:48px; pointer-events:none; opacity:0.9;">▶</div>
               </div>
             `;
          } else {
-           mediaElement = `<a href="${m.url}" target="_blank" style="display:inline-block; padding:12px 24px; background:#0056b3; color:#fff; border-radius:30px; text-decoration:none; font-weight:600;">Watch Live Video Stream</a>`;
+           mediaElement = `
+             <div style="padding:30px; background:var(--muted, #f0f4f7); border-radius:12px; text-align:center;">
+               <a href="${videoPageUrl}" class="btn btn-primary" style="padding:12px 28px; border-radius:30px; text-decoration:none; font-weight:700;">Watch Video on Waterbrooks</a>
+             </div>
+           `;
          }
-      } else if (m.type === 'video') {
-        mediaElement = `<video controls muted loop src="${m.url}" style="width: 100%; border-radius: 12px; background:#000;" onmouseenter="this.play()" onmouseleave="this.pause()"></video>`;
       } else {
-        mediaElement = `<img src="${m.url}" alt="${m.caption}" style="width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" />`;
+        // Image format
+        const imgSrc = m.url.startsWith('http') || m.url.startsWith('/') ? m.url : '/' + m.url;
+        mediaElement = `<img src="${imgSrc}" alt="${m.caption ? m.caption.replace(/"/g, '&quot;') : 'Waterbrooks Media'}" style="width: 100%; max-height: 480px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: pointer;" onclick="window.open('${imgSrc}', '_blank');" onerror="this.src='/images/logo.png'" />`;
       }
 
+      const actionsHtml = isVideoType ? `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; pt-2; border-top:1px solid #edf2f7; padding-top:14px; flex-wrap:wrap; gap:10px;">
+          <a href="${videoPageUrl}" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:999px; font-weight:700; font-size:0.9rem; text-decoration:none;">
+            <span>Watch Video</span>
+            <span>→</span>
+          </a>
+          <button class="pw-copylink-btn" type="button" onclick="copyMediaCardPermalink('${m.id}', this)" title="Copy permalink to this video">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span>Copy Link</span>
+          </button>
+        </div>
+      ` : `
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:16px; border-top:1px solid #edf2f7; padding-top:14px;">
+          <a href="${m.url.startsWith('http') || m.url.startsWith('/') ? m.url : '/' + m.url}" target="_blank" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:6px; padding:7px 16px; border-radius:999px; font-weight:600; font-size:0.85rem; text-decoration:none;">
+            <span>View Full Image</span>
+            <span>↗</span>
+          </a>
+        </div>
+      `;
+
       return `
-        <article class="pw-post" style="padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 24px; border-radius: 12px; background: #fff; border: 1px solid #edf2f7;">
+        <article class="pw-post" id="media-card-${m.id}" style="padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 24px; border-radius: 14px; background: #fff; border: 1px solid #edf2f7;">
           <div style="margin-bottom: 16px;">
             ${mediaElement}
           </div>
           <div class="pw-post-date" style="color:#718096; font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px;">${formatDate(m.date)}</div>
-          <p style="font-size: 1.15rem; font-weight: 600; margin-top: 10px; color:#1a202c; line-height:1.4;">${m.caption}</p>
+          <p style="font-size: 1.15rem; font-weight: 600; margin-top: 10px; color:#1a202c; line-height:1.4;">${m.caption || ''}</p>
+          ${actionsHtml}
         </article>
       `;
     }).join("");
 
     mount.innerHTML = `<div class="pw-list-stack" style="display: grid; gap: 24px;">${html}</div>`;
+  }
+
+  // Copy Permalink helper for media cards
+  window.copyMediaCardPermalink = function(mediaId, btn) {
+    const permalink = `${window.location.origin}/media/video/${encodeURIComponent(mediaId)}`;
+    const span = btn ? btn.querySelector('span:last-child') : null;
+
+    function markSuccess() {
+      if (btn) btn.classList.add('copied');
+      if (span) span.textContent = '✓ Copied!';
+      showFloatingToast('Video link copied to clipboard!');
+      setTimeout(() => {
+        if (btn) btn.classList.remove('copied');
+        if (span) span.textContent = 'Copy Link';
+      }, 2500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(permalink).then(markSuccess).catch(() => fallbackCopy(permalink, markSuccess));
+    } else {
+      fallbackCopy(permalink, markSuccess);
+    }
+  };
+
+  function fallbackCopy(text, cb) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (cb) cb();
+    } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  function showFloatingToast(msg) {
+    let toast = document.getElementById('mediaCardToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'mediaCardToast';
+      toast.className = 'custom-toast';
+      toast.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>${msg}</span>
+      `;
+      document.body.appendChild(toast);
+    } else {
+      toast.querySelector('span').textContent = msg;
+    }
+
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
   }
 
   document.addEventListener("DOMContentLoaded", async function () {
